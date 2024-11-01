@@ -16,6 +16,6 @@ impl Plugin for AssetLoaderPlugin{
 
 fn load_assets(mut scene_assets:ResMut<SceneAssets>, asset_server: Res<AssetServer>){
   *scene_assets = SceneAssets{
-    ship: asset_server.load("models/ship.glb"),
+    ship: asset_server.load("models/ship.glb#Scene0"),
   }
 }

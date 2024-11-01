@@ -1,5 +1,6 @@
 mod camera;
 mod asset_loader;
+mod ship;
 
 use bevy::prelude::*;
 use camera::CameraPlugin;
