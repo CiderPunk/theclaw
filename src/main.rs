@@ -5,6 +5,7 @@ mod ship;
 use bevy::prelude::*;
 use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
+use ship::ShipPlugin;
 
 fn main() {
   App::new()
@@ -13,6 +14,6 @@ fn main() {
       color: Color::default(),
       brightness:750.0,
     })
-    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin))
+    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, ShipPlugin))
     .run();
 }
