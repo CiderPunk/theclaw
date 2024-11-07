@@ -1,10 +1,12 @@
 mod camera;
 mod asset_loader;
 mod ship;
+mod movement;
 
 use bevy::prelude::*;
 use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
+use movement::MovementPlugin;
 use ship::ShipPlugin;
 
 fn main() {
@@ -14,6 +16,6 @@ fn main() {
       color: Color::default(),
       brightness:750.0,
     })
-    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, ShipPlugin))
+    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, ShipPlugin, MovementPlugin))
     .run();
 }
