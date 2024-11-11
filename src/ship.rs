@@ -1,15 +1,31 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 
 use crate::{asset_loader::SceneAssets, movement::{AcceleratingObjectBundle, Acceleration, MaxSpeed, Velocity}};
 
+
+
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
+const ACCELERATION: f32 = 500.0;
+const DECCELERATION: f32 = 250.0;
+
 
 #[derive(Component)]
 pub struct Ship;
 pub struct ShipPlugin;
 
+
+#[derive(Component)]
+pub struct Pitch{
+  pub value:f32,
+}
+
+impl Pitch{
+  pub fn new(value:f32)-> Self{
+    Self{ value }
+  }
+}
 
 
 impl Plugin for ShipPlugin{
@@ -21,24 +37,38 @@ impl Plugin for ShipPlugin{
 }
 
 
-fn movement_controls(mut query: Query<&mut Acceleration, With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>, time: Res<Time>){
-  let Ok(mut acc) = query.get_single_mut() else{
+fn movement_controls(mut query: Query<(&mut Acceleration, &mut Velocity, &mut Pitch), With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>, time: Res<Time>){
+  let Ok((mut acc, mut velocity, mut pitch)) = query.get_single_mut() else{
     return;
   };
   acc.value = Vec3::ZERO;
   if keyboard_input.pressed(KeyCode::KeyD){
-    acc.value.x -= 400.0;
+    acc.value.x -= ACCELERATION;
   }
   if keyboard_input.pressed(KeyCode::KeyA){
-    acc.value.x += 400.0;
+    acc.value.x += ACCELERATION;
   }  
 
   if keyboard_input.pressed(KeyCode::KeyW){
-    acc.value.z += 400.0;
+    acc.value.z += ACCELERATION;
   }
   if keyboard_input.pressed(KeyCode::KeyS){
-    acc.value.z -= 400.0;
+    acc.value.z -= ACCELERATION;
   }
+
+
+  
+  if acc.value == Vec3::ZERO{
+
+    if velocity.value.length_squared() < 100.0{
+      velocity.value = Vec3::ZERO;
+    }
+    let vel_norm = velocity.value.normalize_or_zero();
+    acc.value = vel_norm * -DECCELERATION;
+  }
+  //max_speed.value = if  acc.value == Vec3::ZERO { 0.0 } else { 100.0};
+
+
 }
 
 fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
@@ -56,6 +86,7 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
       },
       max_speed: MaxSpeed::new(50.0),
     },
+    Pitch::new(0.0),
     Ship,
   ));
 }
