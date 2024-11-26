@@ -1,11 +1,16 @@
 use std::f32::consts::PI;
 use bevy::{math::VectorSpace, prelude::*};
 
-use crate::{asset_loader::SceneAssets, movement::{ MaxLinearAcceleration,  TargetVelocity, TargetVelocityObjectBundle, Velocity}};
+use crate::{asset_loader::SceneAssets, movement::{ Acceleration, MaxLinearAcceleration, TargetVelocity, TargetVelocityObjectBundle, Velocity}};
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
-const MAX_ACCELERATION: f32 = 5.0;
+const MAX_ACCELERATION: f32 = 8.0;
+const MAX_ACCELERATION_COASTING: f32 = 1.0;
 const TARGET_SPEED: f32 = 40.0;
+
+
+const MAX_PITCH: f32 = 15.0;
+const PITCH_SPEED: f32 = 5.0;
 
 
 #[derive(Component)]
@@ -34,8 +39,9 @@ impl Plugin for ShipPlugin{
 }
 
 
-fn movement_controls(mut query: Query<(&mut TargetVelocity, &mut Pitch), With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>, time: Res<Time>){
-  let Ok((mut target_velocity, mut pitch)) = query.get_single_mut() else{
+fn movement_controls(mut query: Query<(&mut TargetVelocity, &mut MaxLinearAcceleration, &mut Pitch), With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>, time: Res<Time>){
+  let Ok((mut target_velocity, mut max_acceleration, mut pitch)) = query.get_single_mut() 
+  else{
     return;
   };
 
@@ -60,6 +66,28 @@ fn movement_controls(mut query: Query<(&mut TargetVelocity, &mut Pitch), With<Sh
     direction.z -= 1.0;
     //target_velocity.value.z -= TARGET_SPEED;
   }
+
+
+  if direction.z == 0.0 {
+    if pitch.value.is_sign_positive(){
+      pitch.value = (pitch.value - (PITCH_SPEED * time.delta_seconds())).clamp(0, MAX_PITCH); 
+    }
+    else{
+      pitch.value = (pitch.value + (PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, 0);
+    }
+  }
+  else{
+    pitch.value = (pitch.value + (direction.z * PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, MAX_PITCH); 
+  }
+
+
+  if  direction == Vec3::ZERO{
+    max_acceleration.value = MAX_ACCELERATION_COASTING;
+  }
+  else{
+    max_acceleration.value = MAX_ACCELERATION;
+  }
+  target_velocity.value = direction * TARGET_SPEED;
   
 
 }
