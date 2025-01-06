@@ -101,7 +101,7 @@ fn update_target_velocity(mut query:Query<(&MaxLinearAcceleration, &TargetVeloci
       return;
     }
     velocity.value = velocity.value + (diff * max_accelleration.value * time.delta_seconds());
-    if (velocity.value.length_squared() > target_velocity.value.length_squared()){
+    if velocity.value.length_squared() > target_velocity.value.length_squared(){
       velocity.value = target_velocity.value;
     }
   }

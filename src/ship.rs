@@ -70,10 +70,10 @@ fn movement_controls(mut query: Query<(&mut TargetVelocity, &mut MaxLinearAccele
 
   if direction.z == 0.0 {
     if pitch.value.is_sign_positive(){
-      pitch.value = (pitch.value - (PITCH_SPEED * time.delta_seconds())).clamp(0, MAX_PITCH); 
+      pitch.value = (pitch.value - (PITCH_SPEED * time.delta_seconds())).clamp(0.0, MAX_PITCH); 
     }
     else{
-      pitch.value = (pitch.value + (PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, 0);
+      pitch.value = (pitch.value + (PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, 0.0);
     }
   }
   else{
