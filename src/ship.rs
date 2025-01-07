@@ -1,5 +1,5 @@
 use std::f32::consts::PI;
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
 use crate::{asset_loader::SceneAssets, movement::{ Acceleration, MaxLinearAcceleration, TargetVelocity, TargetVelocityObjectBundle, Velocity}};
 
@@ -34,7 +34,23 @@ impl Plugin for ShipPlugin{
   fn build(&self, app: &mut App){
     app
       .add_systems(Startup, spawn_ship)
-      .add_systems(Update, movement_controls);
+      .add_systems(Update, (movement_controls, update_pitch).chain());
+  }
+}
+
+
+fn update_pitch(mut query:Query<(&Pitch, &mut Transform)>){
+  for (pitch, mut transform) in query.iter_mut(){
+    let rotation = Quat::from_euler(
+      // YXZ order corresponds to the common
+      // "yaw"/"pitch"/"roll" convention
+      EulerRot::YXZ,
+      (0.0_f32).to_radians(),
+      (pitch.value).to_radians(),
+      (0.0_f32).to_radians(),
+    );
+
+    transform.rotation = rotation;
   }
 }
 
@@ -70,14 +86,14 @@ fn movement_controls(mut query: Query<(&mut TargetVelocity, &mut MaxLinearAccele
 
   if direction.z == 0.0 {
     if pitch.value.is_sign_positive(){
-      pitch.value = (pitch.value - (PITCH_SPEED * time.delta_seconds())).clamp(0.0, MAX_PITCH); 
+      pitch.value = (pitch.value - (PITCH_SPEED * time.delta_secs())).clamp(0.0, MAX_PITCH); 
     }
     else{
-      pitch.value = (pitch.value + (PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, 0.0);
+      pitch.value = (pitch.value + (PITCH_SPEED * time.delta_secs())).clamp(-MAX_PITCH, 0.0);
     }
   }
   else{
-    pitch.value = (pitch.value + (direction.z * PITCH_SPEED * time.delta_seconds())).clamp(-MAX_PITCH, MAX_PITCH); 
+    pitch.value = (pitch.value + (direction.z * PITCH_SPEED * time.delta_secs())).clamp(-MAX_PITCH, MAX_PITCH); 
   }
 
 

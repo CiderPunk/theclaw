@@ -100,7 +100,7 @@ fn update_target_velocity(mut query:Query<(&MaxLinearAcceleration, &TargetVeloci
       velocity.value = target_velocity.value;
       return;
     }
-    velocity.value = velocity.value + (diff * max_accelleration.value * time.delta_seconds());
+    velocity.value = velocity.value + (diff * max_accelleration.value * time.delta_secs());
     if velocity.value.length_squared() > target_velocity.value.length_squared(){
       velocity.value = target_velocity.value;
     }
@@ -111,7 +111,7 @@ fn update_target_velocity(mut query:Query<(&MaxLinearAcceleration, &TargetVeloci
 
 fn update_velocity(mut query:Query<(&Acceleration, &MaxSpeed, &mut Velocity)>, time: Res<Time>){
   for (acceleraation, max_speed, mut velocity) in query.iter_mut(){
-    velocity.value += acceleraation.value * time.delta_seconds();
+    velocity.value += acceleraation.value * time.delta_secs();
     if velocity.value.length() > max_speed.value{
       velocity.value = velocity.value.normalize() * max_speed.value;
     }
@@ -120,6 +120,6 @@ fn update_velocity(mut query:Query<(&Acceleration, &MaxSpeed, &mut Velocity)>, t
 
 fn update_position(mut query:Query<(&Velocity, &mut Transform)>, time: Res<Time>){
   for (vel, mut transform) in query.iter_mut(){
-    transform.translation += vel.value * time.delta_seconds();
+    transform.translation += vel.value * time.delta_secs();
   }
 }
