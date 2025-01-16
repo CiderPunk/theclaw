@@ -115,11 +115,6 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
   commands.spawn((
     TargetVelocityObjectBundle{
       velocity: Velocity::new(Vec3::ZERO),
-      model:     SceneBundle{ 
-        scene:scene_assets.ship.clone(),
-        transform:translation,
-        ..default()
-      },
       target_volcity: TargetVelocity::new(Vec3::ZERO),
       max_accelleration: MaxLinearAcceleration::new(MAX_ACCELERATION),
     },

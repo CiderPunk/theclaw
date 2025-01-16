@@ -2,75 +2,30 @@ use bevy::prelude::*;
 
 
 #[derive(Component)]
-pub struct Velocity{
-  pub value: Vec3,
-}
-
-impl Velocity{
-  pub fn new(value: Vec3) -> Self{
-    Self{ value }
-  }
-}
-
+struct Velocity(Vec3);
 
 #[derive(Component)]
-pub struct TargetVelocity{
-  pub value: Vec3,
-}
-
-impl TargetVelocity{
-  pub fn new(value: Vec3) -> Self{
-    Self{ value }
-  }
-}
+struct TargetVelocity(Vec3);
 
 #[derive(Component)]
-pub struct MaxSpeed{
-  pub value:f32,
-}
-
-impl MaxSpeed{
-  pub fn new(value:f32) -> Self{
-    Self{ value }
-  }
-}
-
-
-
+struct MaxSpeed(f32);
 
 #[derive(Component)]
-pub struct MaxLinearAcceleration{
-  pub value:f32
-}
-
-impl MaxLinearAcceleration{
-  pub fn new(value:f32) -> Self{
-    Self{ value }
-  }
-}
-
+struct MaxLinearAcceleration(f32);
 
 #[derive(Component)]
-pub struct Acceleration{
-  pub value:Vec3,
-}
+struct Acceleration(Vec3);
 
-impl Acceleration{
-  pub fn new(value:Vec3) -> Self{
-    Self{ value }
-  }
-}
 
 #[derive(Bundle)]
 pub struct MovingObjectBundle{
   pub velocity:Velocity,
-  pub model: SceneBundle,
+  pub transform:Transform,
 }
 #[derive(Bundle)]
 pub struct AcceleratingObjectBundle{
   pub acceleration:Acceleration,
   pub velocity:Velocity,
-  pub model: SceneBundle,
   pub max_speed:MaxSpeed,
 }
 
@@ -79,7 +34,6 @@ pub struct TargetVelocityObjectBundle{
   pub velocity:Velocity,
   pub target_volcity:TargetVelocity,
   pub max_accelleration:MaxLinearAcceleration,
-  pub model: SceneBundle,
 }
 
 
