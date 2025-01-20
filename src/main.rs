@@ -6,8 +6,8 @@ mod movement;
 use bevy::prelude::*;
 use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
-use movement::MovementPlugin;
 use ship::ShipPlugin;
+use movement::MovementPlugin;
 
 fn main() {
   App::new()
@@ -16,6 +16,6 @@ fn main() {
       color: Color::default(),
       brightness:750.0,
     })
-    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, ShipPlugin, MovementPlugin))
+    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, MovementPlugin, ShipPlugin))
     .run();
 }
