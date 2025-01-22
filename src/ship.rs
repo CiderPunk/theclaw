@@ -1,14 +1,12 @@
 use std::f32::consts::PI;
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, movement::Velocity};
+use crate::{asset_loader::SceneAssets, movement::Acceleration, ordering::GameInit};
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
-const MAX_ACCELERATION: f32 = 8.0;
-const MAX_ACCELERATION_COASTING: f32 = 1.0;
-const TARGET_SPEED: f32 = 40.0;
-const MAX_PITCH: f32 = 15.0;
-const PITCH_SPEED: f32 = 5.0;
+const SHIP_ACCELERATION: f32 = 350.0;
+const SHIP_DAMPING: f32 = 200.0;
+const SHIP_MAX_SPEED: f32 = 40.0;
 
 
 pub struct ShipPlugin;
@@ -16,7 +14,7 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin{
   fn build(&self, app: &mut App){
     app
-      .add_systems(Startup, spawn_ship)
+      .add_systems(Startup, spawn_ship.in_set(GameInit))
       .add_systems(Update, movement_controls);
   }
 }
@@ -28,36 +26,41 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
   commands.spawn((
     Ship::default(),
     SceneRoot(scene_assets.ship.clone()),
-    translation
+    translation,
+    Acceleration{
+      acceleration:Vec3::ZERO,
+      damping: SHIP_DAMPING,
+      max_speed: SHIP_MAX_SPEED,
+    },
   ));
 }
 
 #[derive(Component, Default)]
-#[require(Transform, Velocity)]
+#[require(Transform, Acceleration)]
 struct Ship{
+  pitch:f32
 }
 
-fn movement_controls(mut query:Query<&mut Velocity, With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>){
-  let Ok(mut velocity) = query.get_single_mut()
+fn movement_controls(mut query:Query<&mut Acceleration, With<Ship>>, keyboard_input:Res<ButtonInput<KeyCode>>){
+  let Ok(mut acceleration) = query.get_single_mut()
   else{
     return;
   };
-  velocity.x = 0.;
-  velocity.y = 0.;
+  let mut acc = Vec3::ZERO;
+
   if keyboard_input.pressed(KeyCode::KeyD){
-    velocity.x -= TARGET_SPEED;
+    acc.x -= 1.;
   }
   if keyboard_input.pressed(KeyCode::KeyA){
-    velocity.x += TARGET_SPEED;
+    acc.x += 1.;
   }
   if keyboard_input.pressed(KeyCode::KeyW){
-    velocity.y += TARGET_SPEED;
+    acc.z += 1.;
   }
   if keyboard_input.pressed(KeyCode::KeyS){
-    velocity.y -= TARGET_SPEED;
+    acc.z -= 1.;
   }
-
-
+  acceleration.acceleration = acc.normalize_or_zero() * SHIP_ACCELERATION;
 }
 
 

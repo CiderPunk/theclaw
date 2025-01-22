@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::ordering::GameLoading;
+
 #[derive(Resource, Default)]
 pub struct SceneAssets{
   pub ship: Handle<Scene>,
@@ -10,7 +12,7 @@ pub struct AssetLoaderPlugin;
 impl Plugin for AssetLoaderPlugin{
   fn build(&self, app: &mut App){
     app.init_resource::<SceneAssets>()
-      .add_systems(Startup, load_assets);
+      .add_systems(Startup, load_assets.in_set(GameLoading));
   }
 }
 
