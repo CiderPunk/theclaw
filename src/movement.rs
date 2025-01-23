@@ -32,10 +32,10 @@ fn update_velocity(mut query:Query<(&mut Velocity, &Acceleration)>, time: Res<Ti
   for (mut velocity, acceleration) in &mut query{
     let mut vel = velocity.0;
     let mut acc = acceleration.acceleration;
-    if acc == Vec3::ZERO{
+    //if acc == Vec3::ZERO{
       //apply damping
-      acc = -vel.normalize_or_zero() * acceleration.damping;
-    }
+      acc += -vel.normalize_or_zero() * acceleration.damping;
+    //}
     
     vel +=  acc * time.delta_secs();
     if vel.length_squared() > (acceleration.max_speed * acceleration.max_speed){
