@@ -7,8 +7,8 @@ const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
 const SHIP_ACCELERATION: f32 = 500.0;
 const SHIP_DAMPING: f32 = 150.0;
 const SHIP_MAX_SPEED: f32 = 40.0;
-const SHIP_MAX_PITCH: f32 = 0.25 * PI;
-const SHIP_PITCH_RATE: f32 = 100.;
+const SHIP_MAX_PITCH: f32 = 0.1 * PI;
+const SHIP_PITCH_RATE: f32 = 2.;
 
 
 pub struct ShipPlugin;
@@ -23,8 +23,8 @@ impl Plugin for ShipPlugin{
 
 fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
   let mut translation = Transform::from_translation(STARTING_TRANSLATION);
-  translation.rotate_x(PI * 0.5);
-  translation.rotate_z(PI * 0.5);
+  //translation.rotate_x(PI * 0.5);
+  //translation.rotate_z(PI * 0.5);
   commands.spawn((
     Ship::default(),
     SceneRoot(scene_assets.ship.clone()),
@@ -59,7 +59,7 @@ fn update_pitch(mut query:Query<(&mut Ship, &mut Transform)>, time: Res<Time>){
     ship.pitch += diff.signum() * max_turn;
   }
 
-  //transform.rotation = Quat::from_rotation_x(ship.pitch);
+  transform.rotation = Quat::from_rotation_y(ship.pitch);
 
 }
 
