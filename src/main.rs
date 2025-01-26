@@ -9,8 +9,10 @@ mod bullet;
 mod enemy;
 mod sidewinder;
 mod state;
+mod bounds_check;
 
 use bevy::prelude::*;
+use bounds_check::BoundsCheckPlugin;
 use bullet::BulletPlugin;
 use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
@@ -41,6 +43,7 @@ fn main() {
       BulletPlugin,
       EnemyPlugin,
       SidewinderPlugin,
+      BoundsCheckPlugin,
     ))
     .run();
 }

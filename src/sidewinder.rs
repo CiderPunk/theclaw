@@ -8,6 +8,7 @@ use crate::{asset_loader::SceneAssets, enemy::*, movement::Velocity};
 pub struct SidewinderPlugin;
 const SIDEWINDER_SPANW_TIME_SECONDS:f32 = 2.;
 const SIDEWINDER_SPIN_SPEED:f32 = 3.0;
+const SIDEWINDER_VERTICAL_VARIANCE:f32 = 10.0;
 
 
 
@@ -28,6 +29,7 @@ impl Plugin for SidewinderPlugin {
 }
 
 #[derive(Component)]
+#[require(Enemy)]
 struct Sidewinder;
 
 
@@ -46,7 +48,11 @@ fn spawn_sidewinder(mut commands:Commands,
   if !timer.just_finished(){ return; }
 
   let mut rng = rand::thread_rng();
-  let start_z =  rng.gen_range(ENEMY_START_POINT_Z_BOUNDS_MIN .. ENEMY_START_POINT_Z_BOUNDS_MAX);
+
+  let spawn_pos = rng.gen_range(-1. .. 1.);
+  let start_z =  ENEMY_START_POINT_Z_BOUNDS_MAX * spawn_pos;
+  let vel_z = spawn_pos * -SIDEWINDER_VERTICAL_VARIANCE;
+
 
   info!("Spawn sidewinder");
   commands.spawn((
@@ -54,6 +60,6 @@ fn spawn_sidewinder(mut commands:Commands,
     SceneRoot(scene_assets.sidewinder.clone()),
     Transform::from_translation( Vec3::new(ENEMY_START_POINT_X,0., start_z))
       .with_rotation(Quat::from_rotation_z(PI)),
-    Velocity( Vec3::new(20.0, 0.,0.)),
+    Velocity( Vec3::new(20.0, 0.,vel_z)),
   ));
 }
