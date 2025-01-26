@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::ordering::GameLoading;
 
 #[derive(Resource, Default)]
 pub struct SceneAssets{
@@ -12,7 +11,7 @@ pub struct AssetLoaderPlugin;
 impl Plugin for AssetLoaderPlugin{
   fn build(&self, app: &mut App){
     app.init_resource::<SceneAssets>()
-      .add_systems(PreStartup, load_assets.in_set(GameLoading));
+      .add_systems(PreStartup, load_assets);
   }
 }
 

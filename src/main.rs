@@ -2,12 +2,19 @@ mod camera;
 mod asset_loader;
 mod ship;
 mod movement;
-mod ordering;
+mod scheduling;
+mod collision_detection;
+mod health;
+mod bullet;
+mod enemy;
 
 use bevy::prelude::*;
+use bullet::BulletPlugin;
 use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
-use ordering::{GameInit, GameLoading};
+use collision_detection::CollsionDetectionPlugin;
+use enemy::EnemyPlugin;
+use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use movement::MovementPlugin;
 
@@ -18,7 +25,16 @@ fn main() {
       color: Color::default(),
       brightness:750.0,
     })
-    .configure_sets(Startup, GameInit.after(GameLoading) )
-    .add_plugins((DefaultPlugins, CameraPlugin, AssetLoaderPlugin, MovementPlugin, ShipPlugin))
+    .add_plugins((
+      DefaultPlugins,
+      SchedulingPlugin,
+      CameraPlugin, 
+      AssetLoaderPlugin, 
+      MovementPlugin, 
+      ShipPlugin,
+      CollsionDetectionPlugin,
+      BulletPlugin,
+      EnemyPlugin,
+    ))
     .run();
 }
