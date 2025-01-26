@@ -107,13 +107,13 @@ fn player_collision_detection(
 }
 
 
-fn apply_collisions( mut ev_collision: EventReader<CollisionEvent>){
+fn apply_collisions(mut ev_collision: EventReader<CollisionEvent>){
 
 }
 
 
 
-fn apply_bullet_collisions( mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
+fn apply_bullet_collisions(mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
 ){
 
 }

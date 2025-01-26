@@ -1,14 +1,14 @@
 use std::f32::consts::PI;
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, collision_detection::Player, movement::Acceleration, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, collision_detection::Player, movement::Acceleration, scheduling::GameSchedule, state::GameState};
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
 const SHIP_ACCELERATION: f32 = 500.0;
 const SHIP_DAMPING: f32 = 150.0;
 const SHIP_MAX_SPEED: f32 = 40.0;
 const SHIP_MAX_PITCH: f32 = 0.1 * PI;
-const SHIP_PITCH_RATE: f32 = 1.6;
+const SHIP_PITCH_RATE: f32 = 2.;
 
 
 
@@ -22,7 +22,7 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin{
   fn build(&self, app: &mut App){
     app
-      .add_systems(Startup, spawn_ship)
+      .add_systems(OnEnter(GameState::Playing), spawn_ship)
       .add_systems(Update, (movement_controls, update_pitch).chain().in_set(GameSchedule::UserInput))
       .add_systems(Update, bounds_check.in_set(GameSchedule::BoundsCheck));
   }

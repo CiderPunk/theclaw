@@ -7,6 +7,8 @@ mod collision_detection;
 mod health;
 mod bullet;
 mod enemy;
+mod sidewinder;
+mod state;
 
 use bevy::prelude::*;
 use bullet::BulletPlugin;
@@ -17,6 +19,8 @@ use enemy::EnemyPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use movement::MovementPlugin;
+use sidewinder::SidewinderPlugin;
+use state::StatePlugin;
 
 fn main() {
   App::new()
@@ -27,6 +31,7 @@ fn main() {
     })
     .add_plugins((
       DefaultPlugins,
+      StatePlugin,
       SchedulingPlugin,
       CameraPlugin, 
       AssetLoaderPlugin, 
@@ -35,6 +40,7 @@ fn main() {
       CollsionDetectionPlugin,
       BulletPlugin,
       EnemyPlugin,
+      SidewinderPlugin,
     ))
     .run();
 }
