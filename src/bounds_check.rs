@@ -22,7 +22,7 @@ fn bounds_check(mut commands:Commands, query:Query<(Entity, &GlobalTransform)>){
       transform.translation().z > DESPAWN_Z_MAX ||
       transform.translation().z < DESPAWN_Z_MIN 
     {
-      info!("despawning {:?}", entity);
+      //info!("despawning {:?}", entity);
       commands.entity(entity).despawn();
     }
   }

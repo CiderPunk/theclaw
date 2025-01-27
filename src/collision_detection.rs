@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::scheduling::GameSchedule;
+use crate::{bullet::Bullet, scheduling::GameSchedule};
 
 pub struct CollsionDetectionPlugin;
 
@@ -23,8 +23,7 @@ pub struct Collider{
   pub radius:f32,
 }
 
-#[derive(Component)]
-pub struct Bullet;
+
 
 #[derive(Component, Default)]
 pub struct Player;

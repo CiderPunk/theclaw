@@ -3,16 +3,14 @@ use bevy::prelude::*;
 
 use crate::{asset_loader::SceneAssets, collision_detection::Player, movement::Acceleration, scheduling::GameSchedule, state::GameState};
 
-const STARTING_TRANSLATION: Vec3 = Vec3::new(0.0,0.0, 0.0);
+const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0,0.0, 0.0);
 const SHIP_ACCELERATION: f32 = 500.0;
 const SHIP_DAMPING: f32 = 150.0;
 const SHIP_MAX_SPEED: f32 = 40.0;
 const SHIP_MAX_PITCH: f32 = 0.1 * PI;
 const SHIP_PITCH_RATE: f32 = 2.;
 
-
-
-
+const CLAW_OFFSET: Vec3 = Vec3::new(0.,0.,-1.2998);
 const BOUNDS_X_MIN:f32 = -20.;
 const BOUNDS_X_MAX:f32 = 50.;
 const BOUNDS_Z_MIN:f32 = -30.;
@@ -38,7 +36,11 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
       damping: SHIP_DAMPING,
       max_speed: SHIP_MAX_SPEED,
     },
+  )).with_child((
+    SceneRoot(scene_assets.hook.clone()),
+    Transform::from_translation(CLAW_OFFSET),
   ));
+
 }
 
 #[derive(Component, Default)]

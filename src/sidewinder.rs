@@ -1,14 +1,15 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, state::commands};
 use rand::Rng;
 
-use crate::{asset_loader::SceneAssets, enemy::*, movement::Velocity};
+use crate::{asset_loader::SceneAssets, bullet::ShootEvent, enemy::*, movement::Velocity};
 
 pub struct SidewinderPlugin;
 const SIDEWINDER_SPANW_TIME_SECONDS:f32 = 2.;
 const SIDEWINDER_SPIN_SPEED:f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE:f32 = 10.0;
+const SIDEWINDER_SHOOT_SPEED:Vec3 = Vec3::new(12.,0.,0.);
 
 
 
@@ -23,14 +24,16 @@ impl Default for SpawnTimer{
 
 impl Plugin for SidewinderPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder));
+    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot));
 
   }
 }
 
 #[derive(Component)]
 #[require(Enemy)]
-struct Sidewinder;
+struct Sidewinder{
+  shoot_timer:Timer
+}
 
 
 fn spin_sidewinder(mut query:Query<&mut Transform, With<Sidewinder>>, time:Res<Time>){
@@ -38,6 +41,27 @@ fn spin_sidewinder(mut query:Query<&mut Transform, With<Sidewinder>>, time:Res<T
     transform.rotate_local_x(SIDEWINDER_SPIN_SPEED * time.delta_secs());
   }
 }
+
+fn shoot(mut commands:Commands,
+  mut query:Query<(&mut Sidewinder, &GlobalTransform, &Velocity)>, 
+  time:Res<Time>,
+  mut ev_shoot_event_writer:EventWriter<ShootEvent>){
+
+  for (mut sidewinder, transform, velocity) in &mut query{
+
+
+
+    sidewinder.shoot_timer.tick(time.delta());
+    if sidewinder.shoot_timer.finished() {
+      info!("Shooting");
+      ev_shoot_event_writer.send(ShootEvent::new(transform.translation(), velocity.0 +SIDEWINDER_SHOOT_SPEED));
+    }
+  }
+}
+
+
+
+
 
 fn spawn_sidewinder(mut commands:Commands, 
   time:Res<Time>,
@@ -53,10 +77,9 @@ fn spawn_sidewinder(mut commands:Commands,
   let start_z =  ENEMY_START_POINT_Z_BOUNDS_MAX * spawn_pos;
   let vel_z = spawn_pos * -SIDEWINDER_VERTICAL_VARIANCE;
 
-
-  info!("Spawn sidewinder");
+  //info!("Spawn sidewinder");
   commands.spawn((
-    Sidewinder,
+    Sidewinder{ shoot_timer:Timer::from_seconds(1., TimerMode::Repeating) },
     SceneRoot(scene_assets.sidewinder.clone()),
     Transform::from_translation( Vec3::new(ENEMY_START_POINT_X,0., start_z))
       .with_rotation(Quat::from_rotation_z(PI)),
