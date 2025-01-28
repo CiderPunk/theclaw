@@ -12,11 +12,15 @@ pub struct SceneAssets{
   pub sidewinder: Handle<Scene>,
   pub hook: Handle<Scene>,
   pub bullet: Handle<Mesh>,
-  pub bullet_material:Handle<StandardMaterial>
+  pub bullet_material:Handle<StandardMaterial>,
+  pub font:Handle<Font>,
 }
 
 #[derive(Resource)]
 struct ShipScene(Handle<Gltf>);
+
+#[derive(Resource)]
+struct GameFont(Handle<Font>);
 
 
 pub struct AssetLoaderPlugin;
@@ -33,6 +37,9 @@ fn load_assets(mut commands:Commands, asset_server: Res<AssetServer>){
   info!("loading assets");
   let gltf = asset_server.load("models/ship2.glb");
   commands.insert_resource(ShipScene(gltf));
+
+  let font = asset_server.load("fonts/OpenSans_Condensed-Bold.ttf");
+  commands.insert_resource(GameFont(font));
 }
 
 fn extract_assets(
@@ -42,10 +49,12 @@ fn extract_assets(
   mut ev_game_state_writer: EventWriter<GameStateEvent>,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<StandardMaterial>>,
+  game_font:Res<GameFont>,
 ){
   let Some(gltf) = gltf_assets.get(&ship_scene.0) else{
     return;
   };
+
   info!("extracting assets");
 
   *scene_assets = SceneAssets{
@@ -53,7 +62,8 @@ fn extract_assets(
     sidewinder: gltf.named_scenes["Sidewinder"].clone(),
     hook: gltf.named_scenes["Claw"].clone(),
     bullet: meshes.add( Sphere::new(0.3).mesh().kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 4 })),
-    bullet_material: materials.add(BULLET_COLOUR)
+    bullet_material: materials.add(BULLET_COLOUR),
+    font: game_font.0.clone(),
   };
   //signal ready for game start
   ev_game_state_writer.send(GameStateEvent::new(GameState::Playing));
