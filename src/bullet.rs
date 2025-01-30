@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, movement::Velocity};
+use crate::{asset_loader::SceneAssets, movement::Velocity, scheduling::GameSchedule};
 
 pub struct BulletPlugin;
 
@@ -8,7 +8,10 @@ pub struct BulletPlugin;
 impl Plugin for BulletPlugin {
   fn build(&self, app: &mut App) {
     app.add_event::<ShootEvent>()
-    .add_systems(Update, do_shooting);
+    .add_systems(Update, (
+      do_shooting.in_set(GameSchedule::EntityUpdates),
+      do_impact.in_set(GameSchedule::DespawnEntities)
+    ));
   }
 }
 
@@ -25,13 +28,16 @@ impl ShootEvent{
 }
 
 #[derive(Component)]
-pub struct Bullet;
+pub struct Bullet{
+  pub hit:bool,
+  pub damage:f32,
+}
 
 fn do_shooting(mut commands:Commands, mut ev_shoot_events:EventReader<ShootEvent>, scene_assets:Res<SceneAssets> ){
   for &ShootEvent{ start, velocity } in ev_shoot_events.read(){
     info!("Spawing bullet");
     commands.spawn((
-      Bullet,
+      Bullet{ hit:false, damage:20.0 },
       Mesh3d(scene_assets.bullet.clone()),
       MeshMaterial3d(scene_assets.bullet_material.clone()),
       Transform::from_translation(start),
@@ -39,3 +45,14 @@ fn do_shooting(mut commands:Commands, mut ev_shoot_events:EventReader<ShootEvent
     ));
   }
 }
+
+fn do_impact(mut commands:Commands, query:Query<(Entity, &Bullet)>){
+  for (entity, bullet) in query.iter(){
+    if bullet.hit{
+      //play a sound or something
+      commands.entity(entity).despawn();
+
+    }
+  }
+}
+

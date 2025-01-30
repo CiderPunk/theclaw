@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, collision_detection::Player, movement::Acceleration, scheduling::GameSchedule, state::GameState};
+use crate::{asset_loader::SceneAssets, collision_detection::{Collider, Player}, health::Health, movement::Acceleration, scheduling::GameSchedule, state::GameState};
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0,0.0, 0.0);
 const SHIP_ACCELERATION: f32 = 500.0;
@@ -9,6 +9,8 @@ const SHIP_DAMPING: f32 = 150.0;
 const SHIP_MAX_SPEED: f32 = 40.0;
 const SHIP_MAX_PITCH: f32 = 0.1 * PI;
 const SHIP_PITCH_RATE: f32 = 2.;
+const SHIP_COLLISION_RADIUS:f32 = 3.0;
+const SHIP_INITIAL_HEALTH:f32= 100.0;
 
 const CLAW_OFFSET: Vec3 = Vec3::new(0.,0.,-1.2998);
 const BOUNDS_X_MIN:f32 = -20.;
@@ -28,7 +30,7 @@ impl Plugin for ShipPlugin{
 
 fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
   commands.spawn((
-    Ship::default(),
+    PlayerShip::default(),
     SceneRoot(scene_assets.ship.clone()),
     Transform::from_translation(STARTING_TRANSLATION),
     Acceleration{
@@ -36,6 +38,8 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
       damping: SHIP_DAMPING,
       max_speed: SHIP_MAX_SPEED,
     },
+    Health(SHIP_INITIAL_HEALTH),
+    Collider{ radius: SHIP_COLLISION_RADIUS },
   )).with_child((
     SceneRoot(scene_assets.hook.clone()),
     Transform::from_translation(CLAW_OFFSET),
@@ -45,13 +49,13 @@ fn spawn_ship(mut commands:Commands, scene_assets:Res<SceneAssets>){
 
 #[derive(Component, Default)]
 #[require(Transform, Acceleration, Player)]
-struct Ship{
+pub struct PlayerShip{
   target_pitch:f32,
   pitch:f32,
 }
 
 
-fn update_pitch(mut query:Query<(&mut Ship, &mut Transform)>, time: Res<Time>){
+fn update_pitch(mut query:Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>){
   let Ok((mut ship, mut transform)) = query.get_single_mut()
   else{
     return;
@@ -67,7 +71,7 @@ fn update_pitch(mut query:Query<(&mut Ship, &mut Transform)>, time: Res<Time>){
   transform.rotation = Quat::from_rotation_y(ship.pitch);
 }
 
-fn movement_controls(mut query:Query<(&mut Acceleration, &mut Ship)>, keyboard_input:Res<ButtonInput<KeyCode>>){
+fn movement_controls(mut query:Query<(&mut Acceleration, &mut PlayerShip)>, keyboard_input:Res<ButtonInput<KeyCode>>){
   let Ok((mut acceleration, mut ship)) = query.get_single_mut()
   else{
     return;
@@ -92,7 +96,7 @@ fn movement_controls(mut query:Query<(&mut Acceleration, &mut Ship)>, keyboard_i
 }
 
 
-fn bounds_check(mut query:Query<&mut Transform, With<Ship>>){
+fn bounds_check(mut query:Query<&mut Transform, With<PlayerShip>>){
   let Ok(mut transform) = query.get_single_mut()
   else{
     return;

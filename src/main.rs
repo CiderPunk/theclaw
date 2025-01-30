@@ -10,6 +10,7 @@ mod enemy;
 mod sidewinder;
 mod state;
 mod bounds_check;
+mod game_ui;
 
 use bevy::prelude::*;
 use bounds_check::BoundsCheckPlugin;
@@ -18,6 +19,8 @@ use camera::CameraPlugin;
 use asset_loader::AssetLoaderPlugin;
 use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
+use game_ui::GameUiPlugin;
+use health::HealthPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use movement::MovementPlugin;
@@ -44,6 +47,8 @@ fn main() {
       EnemyPlugin,
       SidewinderPlugin,
       BoundsCheckPlugin,
+      GameUiPlugin,
+      HealthPlugin,
     ))
     .run();
 }

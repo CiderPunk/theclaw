@@ -3,13 +3,14 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, state::commands};
 use rand::Rng;
 
-use crate::{asset_loader::SceneAssets, bullet::ShootEvent, enemy::*, movement::Velocity};
+use crate::{asset_loader::SceneAssets, bullet::ShootEvent, collision_detection::Collider, enemy::*, movement::Velocity};
 
 pub struct SidewinderPlugin;
 const SIDEWINDER_SPANW_TIME_SECONDS:f32 = 2.;
 const SIDEWINDER_SPIN_SPEED:f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE:f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED:Vec3 = Vec3::new(12.,0.,0.);
+const SIDEWINDER_COLLISION_RADIUS:f32 = 5.0;
 
 
 
@@ -61,8 +62,6 @@ fn shoot(mut commands:Commands,
 
 
 
-
-
 fn spawn_sidewinder(mut commands:Commands, 
   time:Res<Time>,
   mut timer: Local<SpawnTimer>, 
@@ -79,10 +78,11 @@ fn spawn_sidewinder(mut commands:Commands,
 
   //info!("Spawn sidewinder");
   commands.spawn((
-    Sidewinder{ shoot_timer:Timer::from_seconds(1., TimerMode::Repeating) },
+    Sidewinder{ shoot_timer:Timer::from_seconds(1.7, TimerMode::Repeating) },
     SceneRoot(scene_assets.sidewinder.clone()),
     Transform::from_translation( Vec3::new(ENEMY_START_POINT_X,0., start_z))
       .with_rotation(Quat::from_rotation_z(PI)),
     Velocity( Vec3::new(20.0, 0.,vel_z)),
+    Collider{ radius: SIDEWINDER_COLLISION_RADIUS },
   ));
 }

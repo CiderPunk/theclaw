@@ -25,4 +25,5 @@ fn spawn_camera(mut commands:Commands){
       ..default() 
     },
   ));  
+
 }

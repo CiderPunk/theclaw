@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{bullet::Bullet, scheduling::GameSchedule};
+use crate::{bullet::{self, Bullet}, health::Health, scheduling::GameSchedule};
 
 pub struct CollsionDetectionPlugin;
 
@@ -113,7 +113,14 @@ fn apply_collisions(mut ev_collision: EventReader<CollisionEvent>){
 
 
 fn apply_bullet_collisions(mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
-){
+  mut health_query:Query<&mut Health>,
+  mut bullet_query:Query<&mut Bullet>){
+  for &BulletCollisionEvent{ entity, bullet } in ev_bullet_collision.read(){
+    let Ok(mut bullet_details) = bullet_query.get_mut(bullet) else{ continue; };
+    bullet_details.hit = true;
 
+    let Ok(mut health) = health_query.get_mut(entity) else{ continue; };
+    health.0 -= bullet_details.damage;
+  }
 }
 

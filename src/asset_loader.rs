@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use crate::state::{GameState, GameStateEvent};
 
 
-const BULLET_COLOUR:Color = Color::srgb(1.0, 0.9, 0.1);
+const BULLET_COLOUR:Color = Color::srgb(2.0, 1.8, 0.2);
+const BULLET_SIZE:f32 = 0.5;
 
 
 #[derive(Resource, Default)]
@@ -61,7 +62,7 @@ fn extract_assets(
     ship: gltf.named_scenes["ClawShip"].clone(),
     sidewinder: gltf.named_scenes["Sidewinder"].clone(),
     hook: gltf.named_scenes["Claw"].clone(),
-    bullet: meshes.add( Sphere::new(0.3).mesh().kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 4 })),
+    bullet: meshes.add( Sphere::new(BULLET_SIZE).mesh().kind(bevy::render::mesh::SphereKind::Ico { subdivisions: 3 })),
     bullet_material: materials.add(BULLET_COLOUR),
     font: game_font.0.clone(),
   };
