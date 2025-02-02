@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, health::Health, ship::PlayerShip};
+use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::PlayerShip};
 
 pub struct GameUiPlugin;
 
@@ -11,7 +11,7 @@ impl Plugin for GameUiPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(Startup, init_game_ui)
-      .add_systems(Update, health_update);
+      .add_systems(Update, health_update.in_set(GameSchedule::EntityUpdates));
   }
 }
 

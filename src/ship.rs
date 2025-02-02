@@ -115,6 +115,7 @@ fn fire_controls(
     //spawn hook
     commands.spawn((
       Hook::new(entity),
+      Player,
       SceneRoot(scene_assets.hook.clone()),
       Velocity(velocity.0 + Vec3::new(-HOOK_LAUNCH_SPEED, 0., 0.)), //(transform.right() * -60.0)),
       Acceleration {

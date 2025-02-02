@@ -4,8 +4,7 @@ use bevy::{prelude::*, state::commands};
 use rand::Rng;
 
 use crate::{
-  asset_loader::SceneAssets, bullet::ShootEvent, collision_detection::Collider, enemy::*,
-  movement::Velocity,
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, movement::Velocity
 };
 
 pub struct SidewinderPlugin;
@@ -34,7 +33,7 @@ impl Plugin for SidewinderPlugin {
 }
 
 #[derive(Component)]
-#[require(Enemy)]
+#[require(Enemy, BoundsDespawn)]
 struct Sidewinder {
   shoot_timer: Timer,
 }

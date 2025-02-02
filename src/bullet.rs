@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::SceneAssets, bounds_check::BoundsDespawn, movement::Velocity, scheduling::GameSchedule};
 
 pub struct BulletPlugin;
 
@@ -29,6 +29,7 @@ impl ShootEvent {
 }
 
 #[derive(Component)]
+#[require(BoundsDespawn)]
 pub struct Bullet {
   pub hit: bool,
   pub damage: f32,
@@ -58,7 +59,7 @@ fn do_impact(mut commands: Commands, query: Query<(Entity, &Bullet)>) {
   for (entity, bullet) in query.iter() {
     if bullet.hit {
       //play a sound or something
-      commands.entity(entity).despawn();
+      commands.entity(entity).despawn_recursive();
     }
   }
 }
