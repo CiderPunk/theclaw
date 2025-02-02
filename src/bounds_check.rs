@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::scheduling::GameSchedule;
+use crate::{collision_detection::Player, hook::Hook, scheduling::GameSchedule, ship::PlayerShip};
 
 pub const DESPAWN_X_MAX:f32 = 80.0;
 pub const DESPAWN_X_MIN:f32 = -80.0;
@@ -15,14 +15,16 @@ impl Plugin for BoundsCheckPlugin {
   }
 }
 
-fn bounds_check(mut commands:Commands, query:Query<(Entity, &GlobalTransform)>){
+fn bounds_check(mut commands:Commands, query:Query<(Entity, &GlobalTransform), Without<Player>>){
   for (entity, transform) in query.iter() {
     if transform.translation().x > DESPAWN_X_MAX ||
       transform.translation().x < DESPAWN_X_MIN ||
       transform.translation().z > DESPAWN_Z_MAX ||
       transform.translation().z < DESPAWN_Z_MIN 
     {
-      //info!("despawning {:?}", entity);
+
+
+      info!("despawning {:?}", entity);
       commands.entity(entity).despawn();
     }
   }

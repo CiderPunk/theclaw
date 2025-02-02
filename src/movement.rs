@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::scheduling::GameSchedule;
+use crate::{hook::Hook, scheduling::GameSchedule};
 
 pub struct MovementPlugin;
 
@@ -35,10 +35,10 @@ fn update_velocity(mut query:Query<(&mut Velocity, &Acceleration)>, time: Res<Ti
   for (mut velocity, acceleration) in &mut query{
     let mut vel = velocity.0;
     let mut acc = acceleration.acceleration;
-    
+
     if acc == Vec3::ZERO && vel.length_squared() < STOPPED_SPEED{
       velocity.0 = Vec3::ZERO;
-      return;
+      continue;
     }
     
     //damping
@@ -52,5 +52,8 @@ fn update_velocity(mut query:Query<(&mut Velocity, &Acceleration)>, time: Res<Ti
     }
   }
 }
+
+
+
 
 

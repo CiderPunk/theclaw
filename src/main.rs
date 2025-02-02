@@ -11,6 +11,7 @@ mod sidewinder;
 mod state;
 mod bounds_check;
 mod game_ui;
+mod hook;
 
 use bevy::prelude::*;
 use bounds_check::BoundsCheckPlugin;
@@ -21,6 +22,7 @@ use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
 use game_ui::GameUiPlugin;
 use health::HealthPlugin;
+use hook::HookPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use movement::MovementPlugin;
@@ -49,6 +51,7 @@ fn main() {
       BoundsCheckPlugin,
       GameUiPlugin,
       HealthPlugin,
+      HookPlugin,
     ))
     .run();
 }

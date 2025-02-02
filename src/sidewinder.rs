@@ -10,7 +10,7 @@ const SIDEWINDER_SPANW_TIME_SECONDS:f32 = 2.;
 const SIDEWINDER_SPIN_SPEED:f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE:f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED:Vec3 = Vec3::new(12.,0.,0.);
-const SIDEWINDER_COLLISION_RADIUS:f32 = 5.0;
+const SIDEWINDER_COLLISION_RADIUS:f32 = 1.5;
 
 
 
@@ -49,8 +49,6 @@ fn shoot(mut commands:Commands,
   mut ev_shoot_event_writer:EventWriter<ShootEvent>){
 
   for (mut sidewinder, transform, velocity) in &mut query{
-
-
 
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {

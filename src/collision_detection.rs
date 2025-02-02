@@ -11,7 +11,6 @@ impl Plugin for CollsionDetectionPlugin {
         enemy_bullet_collision_detection, 
         player_collision_detection,
         apply_bullet_collisions,
-        apply_collisions,
       ).chain().in_set(GameSchedule::CollisionDetection))
     .add_event::<CollisionEvent>()
     .add_event::<BulletCollisionEvent>();
@@ -78,8 +77,8 @@ fn player_bullet_collision_detection(mut ev_bullet_collision: EventWriter<Bullet
 fn enemy_bullet_collision_detection(mut ev_bullet_collision: EventWriter<BulletCollisionEvent>,
   bullet_query: Query<(Entity, &GlobalTransform), (With<Bullet> , Without<Player>)>,
   target_query: Query<(Entity, &GlobalTransform, &Collider), With<Player>>){
-  for (bullet, bullet_transform) in bullet_query.iter(){
-    for (target, tagret_transform, collider) in target_query.iter(){
+  for (target, tagret_transform, collider) in target_query.iter(){
+    for (bullet, bullet_transform) in bullet_query.iter(){
       let dist_sqr = bullet_transform.translation().distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius{
         ev_bullet_collision.send(BulletCollisionEvent::new(target, bullet));
@@ -105,13 +104,6 @@ fn player_collision_detection(
   }
 }
 
-
-fn apply_collisions(mut ev_collision: EventReader<CollisionEvent>){
-
-}
-
-
-
 fn apply_bullet_collisions(mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
   mut health_query:Query<&mut Health>,
   mut bullet_query:Query<&mut Bullet>){
@@ -123,4 +115,3 @@ fn apply_bullet_collisions(mut ev_bullet_collision: EventReader<BulletCollisionE
     health.0 -= bullet_details.damage;
   }
 }
-

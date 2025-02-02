@@ -13,7 +13,8 @@ pub enum GameSchedule{
   UserInput,
   EntityUpdates,
   BoundsCheck,
-  CollisionDetection, 
+  CollisionDetection,
+   
   DespawnEntities,
 }
 
