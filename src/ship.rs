@@ -5,7 +5,9 @@ use crate::{
   asset_loader::SceneAssets,
   collision_detection::{Collider, Player},
   health::Health,
-  hook::{Hook, HookReturnedEvent, HOOK_DAMPING, HOOK_LAUNCH_SPEED, HOOK_MAX_SPEED},
+  hook::{
+    Hook, HookReturnedEvent, HOOK_COLLISION_RADIUS, HOOK_DAMPING, HOOK_LAUNCH_SPEED, HOOK_MAX_SPEED,
+  },
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,
   state::GameState,
@@ -124,6 +126,7 @@ fn fire_controls(
         max_speed: HOOK_MAX_SPEED,
       },
       Transform::from_translation(transform.translation()),
+      Collider::new(HOOK_COLLISION_RADIUS),
     ));
   }
 }

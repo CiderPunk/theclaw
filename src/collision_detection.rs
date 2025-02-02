@@ -32,6 +32,12 @@ pub struct Collider {
   pub radius: f32,
 }
 
+impl Collider {
+  pub fn new(radius: f32) -> Self {
+    Self { radius }
+  }
+}
+
 #[derive(Component, Default)]
 pub struct Player;
 
@@ -105,6 +111,8 @@ fn player_collision_detection(
         .distance_squared(enemy_transform.translation());
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
+
+        info!("Collision detected!");
         ev_collision.send(CollisionEvent::new(player, enemy));
       }
     }
