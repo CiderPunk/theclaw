@@ -1,10 +1,10 @@
+use bevy::prelude::*;
+use rand::Rng;
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, state::commands};
-use rand::Rng;
-
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, hook::Hookable, movement::Velocity
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent,
+  collision_detection::Collider, enemy::*, hook::{Captured, Hookable, Hooked}, movement::Velocity,
 };
 
 pub struct SidewinderPlugin;
@@ -38,15 +38,14 @@ struct Sidewinder {
   shoot_timer: Timer,
 }
 
-fn spin_sidewinder(mut query: Query<&mut Transform, With<Sidewinder>>, time: Res<Time>) {
+fn spin_sidewinder(mut query: Query<&mut Transform, (With<Sidewinder>, Without<Hooked>, Without<Captured>)>, time: Res<Time>) {
   for mut transform in query.iter_mut() {
     transform.rotate_local_x(SIDEWINDER_SPIN_SPEED * time.delta_secs());
   }
 }
 
 fn shoot(
-  mut commands: Commands,
-  mut query: Query<(&mut Sidewinder, &GlobalTransform, &Velocity)>,
+  mut query: Query<(&mut Sidewinder, &GlobalTransform, &Velocity), (Without<Hooked>, Without<Captured>) >,
   time: Res<Time>,
   mut ev_shoot_event_writer: EventWriter<ShootEvent>,
 ) {

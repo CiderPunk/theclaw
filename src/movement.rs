@@ -1,6 +1,5 @@
+use crate::scheduling::GameSchedule;
 use bevy::prelude::*;
-
-use crate::{hook::Hook, scheduling::GameSchedule};
 
 pub struct MovementPlugin;
 

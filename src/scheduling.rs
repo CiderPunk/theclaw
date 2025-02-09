@@ -1,5 +1,3 @@
-use std::default;
-
 use bevy::prelude::*;
 
 use crate::state::GameState;
@@ -10,7 +8,6 @@ pub enum GameSchedule {
   EntityUpdates,
   BoundsCheck,
   CollisionDetection,
-
   DespawnEntities,
 }
 

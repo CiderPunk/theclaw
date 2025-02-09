@@ -1,7 +1,8 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  collision_detection::{CollisionEvent, Player},
+  asset_loader::SceneAssets,
+  collision_detection::{Collider, CollisionEvent, Player},
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,
 };
@@ -20,8 +21,12 @@ impl Plugin for HookPlugin {
     app
       .add_systems(Update, update_hook.in_set(GameSchedule::UserInput))
       .add_systems(Update, retrieve_hook.in_set(GameSchedule::DespawnEntities))
-      .add_systems(Update, apply_collisions.in_set(GameSchedule::EntityUpdates))
-      .add_event::<HookReturnedEvent>();
+      .add_systems(
+        Update,
+        (hook_launch, apply_collisions, rotate_hook).in_set(GameSchedule::EntityUpdates),
+      )
+      .add_event::<HookReturnedEvent>()
+      .add_event::<HookLaunchEvent>();
   }
 }
 
@@ -29,7 +34,12 @@ impl Plugin for HookPlugin {
 pub struct Hookable;
 
 #[derive(Component)]
-pub struct Hooked;
+pub struct Hooked {
+  time: Stopwatch,
+}
+#[derive(Component)]
+pub struct Captured {
+}
 
 #[derive(Component)]
 #[require(Acceleration, Velocity, Player)]
@@ -57,6 +67,59 @@ impl HookReturnedEvent {
   pub fn new(target: Option<Entity>) -> Self {
     Self { target }
   }
+}
+
+#[derive(Event)]
+pub struct HookLaunchEvent {
+  owner: Entity,
+  location: Vec3,
+  base_velocity: Vec3,
+}
+
+impl HookLaunchEvent {
+  pub fn new(owner: Entity, location: Vec3, base_velocity: Vec3) -> Self {
+    Self {
+      owner,
+      location,
+      base_velocity,
+    }
+  }
+}
+
+fn hook_launch(
+  mut commands: Commands,
+  mut ev_hook_launch: EventReader<HookLaunchEvent>,
+  scene_assets: Res<SceneAssets>,
+) {
+  for &HookLaunchEvent {
+    owner,
+    location,
+    base_velocity,
+  } in ev_hook_launch.read()
+  {
+    commands.spawn((
+      Hook::new(owner),
+      Player,
+      SceneRoot(scene_assets.hook.clone()),
+      Velocity(base_velocity + Vec3::new(-HOOK_LAUNCH_SPEED, 0., 0.)),
+      Acceleration {
+        acceleration: Vec3::ZERO,
+        damping: HOOK_DAMPING,
+        max_speed: HOOK_MAX_SPEED,
+      },
+      Transform::from_translation(location),
+      Collider::new(HOOK_COLLISION_RADIUS),
+    ));
+  }
+}
+
+fn rotate_hook(mut query: Query<(&mut Transform, &Velocity), With<Hook>>) {
+  let Ok((mut transform, velocity)) = query.get_single_mut() else {
+    return;
+  };
+
+  let angle = (velocity.z / velocity.x).atan();
+  transform.rotation = Quat::from_axis_angle(Vec3::Y, angle);
 }
 
 fn update_hook(
@@ -99,25 +162,21 @@ fn retrieve_hook(
   }
 }
 
+
 fn apply_collisions(
-  mut commands:Commands, 
-  mut ev_collision: EventReader<CollisionEvent>, 
+  mut commands: Commands,
+  mut ev_collision: EventReader<CollisionEvent>,
   mut hook_query: Query<&mut Hook>,
-  mut target_query: Query<&mut Transform, With<Hookable>>,
+  mut target_query: Query<(&mut Transform, &SceneRoot), With<Hookable>>,
 ) {
   for &CollisionEvent { entity, collided } in ev_collision.read() {
-    let Ok(mut hook) = hook_query.get_mut(entity) 
-    else { continue; };
-
-    let Ok (mut target_transform) = target_query.get_mut(collided) 
-    else{ continue; };
-
-    target_transform.translation = Vec3::ZERO;
-
+    let Ok(mut hook) = hook_query.get_mut(entity) else {
+      continue;
+    };
     hook.returning = true;
     commands.entity(entity).add_child(collided);
+    //commands.entity(collided).despawn_recursive();
 
     info!("hook collision");
-
   }
 }

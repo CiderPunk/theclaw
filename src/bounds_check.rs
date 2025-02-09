@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{collision_detection::Player, scheduling::GameSchedule};
+use crate::scheduling::GameSchedule;
 
 pub const DESPAWN_X_MAX: f32 = 80.0;
 pub const DESPAWN_X_MIN: f32 = -80.0;

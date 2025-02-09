@@ -5,9 +5,7 @@ use crate::{
   asset_loader::SceneAssets,
   collision_detection::{Collider, Player},
   health::Health,
-  hook::{
-    Hook, HookReturnedEvent, HOOK_COLLISION_RADIUS, HOOK_DAMPING, HOOK_LAUNCH_SPEED, HOOK_MAX_SPEED,
-  },
+  hook::{HookLaunchEvent, HookReturnedEvent},
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,
   state::GameState,
@@ -98,35 +96,24 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
 }
 
 fn fire_controls(
-  mut commands: Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
   keyboard_input: Res<ButtonInput<KeyCode>>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
-  scene_assets: Res<SceneAssets>,
+  mut ev_hook_launch: EventWriter<HookLaunchEvent>,
 ) {
   let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
     return;
   };
   if keyboard_input.pressed(KeyCode::Space) && !ship.hook_out {
-    ship.hook_out = true;
     let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
       return;
     };
-
+    ship.hook_out = true;
     *display_hook_visible = Visibility::Hidden;
-    //spawn hook
-    commands.spawn((
-      Hook::new(entity),
-      Player,
-      SceneRoot(scene_assets.hook.clone()),
-      Velocity(velocity.0 + Vec3::new(-HOOK_LAUNCH_SPEED, 0., 0.)), //(transform.right() * -60.0)),
-      Acceleration {
-        acceleration: Vec3::ZERO,
-        damping: HOOK_DAMPING,
-        max_speed: HOOK_MAX_SPEED,
-      },
-      Transform::from_translation(transform.translation()),
-      Collider::new(HOOK_COLLISION_RADIUS),
+    ev_hook_launch.send(HookLaunchEvent::new(
+      entity,
+      transform.translation(),
+      velocity.0,
     ));
   }
 }

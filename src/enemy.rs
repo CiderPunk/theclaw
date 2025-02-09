@@ -7,7 +7,7 @@ pub const ENEMY_START_POINT_Z_BOUNDS_MAX: f32 = 26.0;
 pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
-  fn build(&self, app: &mut App) {
+  fn build(&self, _app: &mut App) {
     //   app.add_systems(Update, bounds_check.in_set(GameSchedule::DespawnEntities));
   }
 }
