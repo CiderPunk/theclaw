@@ -34,6 +34,7 @@ use state::StatePlugin;
 
 fn main() {
   App::new()
+    .insert_resource(AssetMetaCheck::Never)
     .insert_resource(ClearColor(Color::srgb(0.1, 0.0, 0.15)))
     .insert_resource(AmbientLight {
       color: Color::default(),
