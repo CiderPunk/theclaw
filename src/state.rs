@@ -27,7 +27,7 @@ pub enum GameState {
   #[default]
   Loading,
   Playing,
-  Paused,
+  // Paused,
 }
 
 fn init_game_state(mut next_state: ResMut<NextState<GameState>>) {

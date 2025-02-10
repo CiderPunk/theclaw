@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::PlayerShip};
+use crate::{
+  asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::PlayerShip,
+};
 
 pub struct GameUiPlugin;
 

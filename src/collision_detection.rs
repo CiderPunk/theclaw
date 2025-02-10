@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-  bullet::{self, Bullet},
+  bullet::Bullet,
   health::Health,
+  hook::Hook,
   scheduling::GameSchedule,
 };
 
@@ -30,6 +31,12 @@ impl Plugin for CollsionDetectionPlugin {
 #[derive(Component)]
 pub struct Collider {
   pub radius: f32,
+}
+
+impl Collider {
+  pub fn new(radius: f32) -> Self {
+    Self { radius }
+  }
 }
 
 #[derive(Component, Default)]
@@ -79,7 +86,7 @@ fn player_bullet_collision_detection(
 fn enemy_bullet_collision_detection(
   mut ev_bullet_collision: EventWriter<BulletCollisionEvent>,
   bullet_query: Query<(Entity, &GlobalTransform), (With<Bullet>, Without<Player>)>,
-  target_query: Query<(Entity, &GlobalTransform, &Collider), With<Player>>,
+  target_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Hook>)>,
 ) {
   for (target, tagret_transform, collider) in target_query.iter() {
     for (bullet, bullet_transform) in bullet_query.iter() {
@@ -105,6 +112,7 @@ fn player_collision_detection(
         .distance_squared(enemy_transform.translation());
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
+        info!("Collision detected!");
         ev_collision.send(CollisionEvent::new(player, enemy));
       }
     }

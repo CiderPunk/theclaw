@@ -2,13 +2,7 @@ use bevy::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets,
-  collision_detection::{Collider, Player},
-  health::Health,
-  hook::{Hook, HookReturnedEvent, HOOK_DAMPING, HOOK_LAUNCH_SPEED, HOOK_MAX_SPEED},
-  movement::{Acceleration, Velocity},
-  scheduling::GameSchedule,
-  state::GameState,
+  asset_loader::SceneAssets, collision_detection::{Collider, Player}, health::Health, hook::{HookLaunchEvent, HookReturnedEvent}, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Velocity}, scheduling::GameSchedule, state::GameState
 };
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0, 0.0, 0.0);
@@ -96,62 +90,56 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
 }
 
 fn fire_controls(
-  mut commands: Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
-  keyboard_input: Res<ButtonInput<KeyCode>>,
+  mut ev_trigger_event:EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
-  scene_assets: Res<SceneAssets>,
+  mut ev_hook_launch: EventWriter<HookLaunchEvent>,
 ) {
   let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
     return;
   };
-  if keyboard_input.pressed(KeyCode::Space) && !ship.hook_out {
-    ship.hook_out = true;
+
+  let mut shoot = false;
+  for InputTriggerEvent { action, input_type } in ev_trigger_event.read(){
+    if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed{
+      shoot = true;
+    }
+  }
+
+  if !shoot{
+    return;
+  }
+  
+  if !ship.hook_out {
     let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
       return;
     };
-
+    ship.hook_out = true;
     *display_hook_visible = Visibility::Hidden;
-    //spawn hook
-    commands.spawn((
-      Hook::new(entity),
-      Player,
-      SceneRoot(scene_assets.hook.clone()),
-      Velocity(velocity.0 + Vec3::new(-HOOK_LAUNCH_SPEED, 0., 0.)), //(transform.right() * -60.0)),
-      Acceleration {
-        acceleration: Vec3::ZERO,
-        damping: HOOK_DAMPING,
-        max_speed: HOOK_MAX_SPEED,
-      },
-      Transform::from_translation(transform.translation()),
+    ev_hook_launch.send(HookLaunchEvent::new(
+      entity,
+      transform.translation(),
+      velocity.0,
     ));
   }
 }
 
 fn movement_controls(
   mut query: Query<(&mut Acceleration, &mut PlayerShip)>,
-  keyboard_input: Res<ButtonInput<KeyCode>>,
+  mut ev_movement_event:EventReader<InputMovementEvent>,
+  //keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
   let Ok((mut acceleration, mut ship)) = query.get_single_mut() else {
     return;
   };
-  let mut acc = Vec3::ZERO;
+  let mut acc = Vec2::ZERO;
+  for InputMovementEvent { direction } in ev_movement_event.read(){
+    acc += direction;
+  }
 
-  if keyboard_input.pressed(KeyCode::KeyD) {
-    acc.x -= 1.;
-  }
-  if keyboard_input.pressed(KeyCode::KeyA) {
-    acc.x += 1.;
-  }
-  if keyboard_input.pressed(KeyCode::KeyW) {
-    acc.z += 1.;
-  }
-  if keyboard_input.pressed(KeyCode::KeyS) {
-    acc.z -= 1.;
-  }
   acc = acc.normalize_or_zero();
-  acceleration.acceleration = acc * SHIP_ACCELERATION;
-  ship.target_pitch = acc.z * SHIP_MAX_PITCH;
+  acceleration.acceleration = Vec3::new(acc.x, 0., acc.y) * SHIP_ACCELERATION;
+  ship.target_pitch = acc.y * SHIP_MAX_PITCH;
 }
 
 fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
