@@ -12,6 +12,7 @@ mod scheduling;
 mod ship;
 mod sidewinder;
 mod state;
+mod input;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::prelude::*;
@@ -23,6 +24,8 @@ use enemy::EnemyPlugin;
 use game_ui::GameUiPlugin;
 use health::HealthPlugin;
 use hook::HookPlugin;
+
+use input::GameInputPlugin;
 use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
@@ -52,6 +55,9 @@ fn main() {
       GameUiPlugin,
       HealthPlugin,
       HookPlugin,
+    ))
+    .add_plugins((
+      GameInputPlugin,
     ))
     .run();
 }

@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
@@ -23,7 +25,7 @@ impl Plugin for HookPlugin {
       .add_systems(Update, retrieve_hook.in_set(GameSchedule::DespawnEntities))
       .add_systems(
         Update,
-        (hook_launch, apply_collisions, rotate_hook).in_set(GameSchedule::EntityUpdates),
+        (hook_launch, apply_collisions, update_hook_angle, center_hooked).in_set(GameSchedule::EntityUpdates),
       )
       .add_event::<HookReturnedEvent>()
       .add_event::<HookLaunchEvent>();
@@ -33,7 +35,7 @@ impl Plugin for HookPlugin {
 #[derive(Component, Default)]
 pub struct Hookable;
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Hooked {
   time: Stopwatch,
 }
@@ -113,13 +115,13 @@ fn hook_launch(
   }
 }
 
-fn rotate_hook(mut query: Query<(&mut Transform, &Velocity), With<Hook>>) {
+fn update_hook_angle(mut query: Query<(&mut Transform, &Velocity), With<Hook>>) {
   let Ok((mut transform, velocity)) = query.get_single_mut() else {
     return;
   };
 
-  let angle = (velocity.z / velocity.x).atan();
-  transform.rotation = Quat::from_axis_angle(Vec3::Y, angle);
+  //let angle = (velocity.z / velocity.x).atan() + (PI * 0.5); 
+  //transform.rotation = Quat::from_rotation_y(angle);
 }
 
 fn update_hook(
@@ -166,17 +168,40 @@ fn retrieve_hook(
 fn apply_collisions(
   mut commands: Commands,
   mut ev_collision: EventReader<CollisionEvent>,
-  mut hook_query: Query<&mut Hook>,
-  mut target_query: Query<(&mut Transform, &SceneRoot), With<Hookable>>,
+  mut hook_query: Query<(&mut Hook, &GlobalTransform)>,
+  mut target_query: Query<(&mut Transform, &mut Velocity, &GlobalTransform), (With<Hookable>, Without<Hook>)>,
 ) {
   for &CollisionEvent { entity, collided } in ev_collision.read() {
-    let Ok(mut hook) = hook_query.get_mut(entity) else {
+    let Ok((mut hook, hook_transform)) = hook_query.get_mut(entity) else {
+      continue;
+    };
+    let Ok((mut transform, mut velocity, target_transform)) = target_query.get_mut(collided) else{ 
       continue;
     };
     hook.returning = true;
     commands.entity(entity).add_child(collided);
-    //commands.entity(collided).despawn_recursive();
+    transform.translation = target_transform.translation() - hook_transform.translation();
+    velocity.0 = -transform.translation.normalize() * 20.0;
+    //target_transform.translation = Vec3::ZERO;
 
-    info!("hook collision");
+    commands.entity(collided).insert(Hooked{ time:Stopwatch::new() });
+
   }
 }
+
+fn center_hooked(mut query:Query<(&mut Hooked,&mut Transform, &mut Velocity)>, time:Res<Time>){
+  let Ok((mut hooked, mut transform, mut velocity)) = query.get_single_mut() else {
+    return;
+  };
+  hooked.time.tick(time.delta());
+  //transform.rotation = Quat::lerp(self, end, s)
+
+
+  if transform.translation.length_squared() < 1.0{
+    velocity.0 = Vec3::ZERO;
+    transform.translation = Vec3::ZERO;
+  }
+  
+
+}
+
