@@ -15,7 +15,7 @@ mod state;
 mod input;
 
 use asset_loader::AssetLoaderPlugin;
-use bevy::prelude::*;
+use bevy::{asset::AssetMetaCheck, prelude::*};
 use bounds_check::BoundsCheckPlugin;
 use bullet::BulletPlugin;
 use camera::CameraPlugin;
@@ -34,14 +34,13 @@ use state::StatePlugin;
 
 fn main() {
   App::new()
-    .insert_resource(AssetMetaCheck::Never)
     .insert_resource(ClearColor(Color::srgb(0.1, 0.0, 0.15)))
     .insert_resource(AmbientLight {
       color: Color::default(),
       brightness: 750.0,
     })
     .add_plugins((
-      DefaultPlugins,
+      DefaultPlugins.set(AssetPlugin{ meta_check: AssetMetaCheck::Never, ..Default::default() }),
       StatePlugin,
       SchedulingPlugin,
       CameraPlugin,
