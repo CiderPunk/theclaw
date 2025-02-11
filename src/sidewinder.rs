@@ -4,15 +4,31 @@ use std::f32::consts::PI;
 
 use crate::{
   asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent,
-  collision_detection::Collider, enemy::*, hook::{Captured, Hookable, Hooked}, movement::Velocity,
+  collision_detection::Collider, enemy::*, hook::{Captured,Hookable, Hooked}, movement::Velocity,
 };
 
-pub struct SidewinderPlugin;
+
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
 const SIDEWINDER_SPIN_SPEED: f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED: Vec3 = Vec3::new(12., 0., 0.);
 const SIDEWINDER_COLLISION_RADIUS: f32 = 1.5;
+
+const SIDEWINDER_HOOK_TRANSLATION:Vec3 = Vec3::new(1.,0.,0.);
+const SIDEWINDER_HOOK_ROTATION:f32 = PI;
+
+
+pub struct SidewinderPlugin;
+
+
+impl Plugin for SidewinderPlugin {
+  fn build(&self, app: &mut App) {
+
+    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot));
+  }
+}
+
+
 
 #[derive(Deref, DerefMut)]
 pub struct SpawnTimer(Timer);
@@ -26,11 +42,6 @@ impl Default for SpawnTimer {
   }
 }
 
-impl Plugin for SidewinderPlugin {
-  fn build(&self, app: &mut App) {
-    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot));
-  }
-}
 
 #[derive(Component)]
 #[require(Enemy, BoundsDespawn, Hookable)]
@@ -90,5 +101,6 @@ fn spawn_sidewinder(
     Collider {
       radius: SIDEWINDER_COLLISION_RADIUS,
     },
+    Hookable::new(SIDEWINDER_HOOK_TRANSLATION, Quat::from_rotation_z(SIDEWINDER_HOOK_ROTATION)),
   ));
 }
