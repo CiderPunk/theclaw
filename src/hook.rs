@@ -158,7 +158,7 @@ fn update_hook(
     }
   } else if diff_squared > HOOK_RETURN_DISTANCE * HOOK_RETURN_DISTANCE {
     hook.returning = true;
-    info!("Hook returning");
+    //info!("Hook returning");
   }
 }
 

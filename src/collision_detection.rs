@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 
 use crate::{
   bullet::Bullet,
@@ -107,12 +107,16 @@ fn player_collision_detection(
 ) {
   for (player, player_transform, player_collider) in player_query.iter() {
     for (enemy, enemy_transform, enemy_collider) in enemy_query.iter() {
+      //newly spawned ents have 0.,0.,0. always! ANNOYING
+      //if player_transform.translation() == Vec3::ZERO || enemy_transform.translation() == Vec3::ZERO{
+      //  continue;
+      //}
       let dist_sqr = player_transform
         .translation()
         .distance_squared(enemy_transform.translation());
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
-        info!("Collision detected!");
+        info!("Collision detected! dist: {:?},  player:{:?}, other: {:?} player pos: {:?} other pos: {:?}", dist_sqr, player, enemy, player_transform.translation(), enemy_transform.translation());
         ev_collision.send(CollisionEvent::new(player, enemy));
       }
     }

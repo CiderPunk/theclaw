@@ -63,7 +63,7 @@ fn shoot(
   for (mut sidewinder, transform, velocity) in &mut query {
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
-      info!("Shooting");
+      //info!("Shooting");
       ev_shoot_event_writer.send(ShootEvent::new(
         transform.translation(),
         velocity.0 + SIDEWINDER_SHOOT_SPEED,
