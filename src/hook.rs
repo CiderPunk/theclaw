@@ -194,7 +194,7 @@ fn apply_collisions(
     transform.translation = target_transform.translation() - hook_transform.translation();
     velocity.0 = -transform.translation.normalize() * HOOK_CENTERING_SPEED;
     //target_transform.translation = Vec3::ZERO;
-
+    commands.entity(entity).remove::<Collider>();
     commands.entity(collided).insert(Hooked{ time:Stopwatch::new() });
 
   }
