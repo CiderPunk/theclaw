@@ -22,7 +22,7 @@ impl Plugin for GameInputPlugin{
     app
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
-      .add_systems(Update, read_keys.in_set(GameSchedule::UserInput));
+      .add_systems(Update, (read_keys, read_mouse).in_set(GameSchedule::UserInput));
   }
 }
 
@@ -50,6 +50,25 @@ impl InputTriggerEvent{
   }
 }
 
+
+
+fn read_mouse( 
+  buttons:Res<ButtonInput<MouseButton>>,
+  mut ev_movement_event:EventWriter<InputMovementEvent>,
+  mut ev_trigger_event:EventWriter<InputTriggerEvent>,
+){
+
+  if buttons.just_pressed(MouseButton::Right){
+    ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Pressed));
+  }
+  if buttons.just_released(MouseButton::Right){
+    ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Released));
+  }
+  if buttons.just_pressed(MouseButton::Left){
+    
+  }
+
+}
 
 
 

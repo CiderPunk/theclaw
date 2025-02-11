@@ -168,6 +168,8 @@ fn retrieve_hook(
   query: Query<Entity, With<Hook>>,
 ) {
   for &HookReturnedEvent { target } in ev_hook_returned.read() {
+
+    //despawn our hook
     let Ok(entity) = query.get_single() else {
       return;
     };
