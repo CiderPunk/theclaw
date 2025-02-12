@@ -22,10 +22,11 @@ impl Plugin for SchedulingPlugin {
         GameSchedule::UserInput,
         GameSchedule::EntityUpdates,
         GameSchedule::BoundsCheck,
-        GameSchedule::CollisionDetection,
       )
         .chain()
         .run_if(in_state(GameState::Playing)),
+    ).configure_sets(Last, 
+      GameSchedule::CollisionDetection.run_if(in_state(GameState::Playing))
     );
   }
 }

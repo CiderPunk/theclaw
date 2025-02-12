@@ -44,7 +44,6 @@ fn do_shooting(
   scene_assets: Res<SceneAssets>,
 ) {
   for &ShootEvent { start, velocity } in ev_shoot_events.read() {
-    info!("Spawing bullet");
     commands.spawn((
       Bullet {
         hit: false,

@@ -16,6 +16,7 @@ pub const HOOK_MAX_SPEED: f32 = 80.0;
 pub const HOOK_RETURN_ACCELERATION: f32 = 800.0;
 pub const HOOK_DAMPING: f32 = 5.0;
 pub const HOOK_COLLISION_RADIUS: f32 = 2.0;
+pub const HOOK_CENTERING_SPEED:f32 = 10.0;
 
 pub struct HookPlugin;
 impl Plugin for HookPlugin {
@@ -33,7 +34,17 @@ impl Plugin for HookPlugin {
 }
 
 #[derive(Component, Default)]
-pub struct Hookable;
+pub struct Hookable{
+  translation:Vec3,
+  rotation:Quat,
+}
+
+impl Hookable{
+  pub fn new(translation:Vec3, rotation:Quat)->Self{
+    Self{translation, rotation}
+  }
+}
+
 
 #[derive(Component, Default)]
 pub struct Hooked {
@@ -147,7 +158,7 @@ fn update_hook(
     }
   } else if diff_squared > HOOK_RETURN_DISTANCE * HOOK_RETURN_DISTANCE {
     hook.returning = true;
-    info!("Hook returning");
+    //info!("Hook returning");
   }
 }
 
@@ -157,6 +168,8 @@ fn retrieve_hook(
   query: Query<Entity, With<Hook>>,
 ) {
   for &HookReturnedEvent { target } in ev_hook_returned.read() {
+
+    //despawn our hook
     let Ok(entity) = query.get_single() else {
       return;
     };
@@ -169,21 +182,21 @@ fn apply_collisions(
   mut commands: Commands,
   mut ev_collision: EventReader<CollisionEvent>,
   mut hook_query: Query<(&mut Hook, &GlobalTransform)>,
-  mut target_query: Query<(&mut Transform, &mut Velocity, &GlobalTransform), (With<Hookable>, Without<Hook>)>,
+  mut target_query: Query<(&mut Transform, &mut Velocity, &GlobalTransform, &Hookable), Without<Hook>>,
 ) {
   for &CollisionEvent { entity, collided } in ev_collision.read() {
     let Ok((mut hook, hook_transform)) = hook_query.get_mut(entity) else {
       continue;
     };
-    let Ok((mut transform, mut velocity, target_transform)) = target_query.get_mut(collided) else{ 
+    let Ok((mut transform, mut velocity, target_transform, hookable)) = target_query.get_mut(collided) else{ 
       continue;
     };
     hook.returning = true;
     commands.entity(entity).add_child(collided);
     transform.translation = target_transform.translation() - hook_transform.translation();
-    velocity.0 = -transform.translation.normalize() * 20.0;
+    velocity.0 = -transform.translation.normalize() * HOOK_CENTERING_SPEED;
     //target_transform.translation = Vec3::ZERO;
-
+    commands.entity(entity).remove::<Collider>();
     commands.entity(collided).insert(Hooked{ time:Stopwatch::new() });
 
   }
@@ -195,8 +208,6 @@ fn center_hooked(mut query:Query<(&mut Hooked,&mut Transform, &mut Velocity)>, t
   };
   hooked.time.tick(time.delta());
   //transform.rotation = Quat::lerp(self, end, s)
-
-
   if transform.translation.length_squared() < 1.0{
     velocity.0 = Vec3::ZERO;
     transform.translation = Vec3::ZERO;

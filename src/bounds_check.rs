@@ -28,7 +28,7 @@ fn bounds_check(
       || transform.translation().z > DESPAWN_Z_MAX
       || transform.translation().z < DESPAWN_Z_MIN
     {
-      info!("despawning {:?}", entity);
+      //info!("despawning {:?}", entity);
       commands.entity(entity).despawn_recursive(); //.despawn();
     }
   }

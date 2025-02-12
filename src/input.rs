@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*, window::PrimaryWindow};
 
 use crate::scheduling::GameSchedule;
 
@@ -22,7 +22,8 @@ impl Plugin for GameInputPlugin{
     app
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
-      .add_systems(Update, read_keys.in_set(GameSchedule::UserInput));
+      .add_systems(Startup, init_input_resources)
+      .add_systems(Update, (read_keys, read_mouse).in_set(GameSchedule::UserInput));
   }
 }
 
@@ -50,6 +51,49 @@ impl InputTriggerEvent{
   }
 }
 
+
+#[derive(Resource)]
+struct MouseResource{
+  touchdown_location:Vec2,
+  last_location:Vec2,
+}
+
+
+fn init_input_resources(mut commands:Commands){
+  commands.insert_resource(MouseResource{ touchdown_location:Vec2::ZERO, last_location:Vec2::ZERO });
+
+}
+
+fn read_mouse( 
+  buttons:Res<ButtonInput<MouseButton>>,
+  window: Single<&Window, With<PrimaryWindow>>,
+  mut ev_movement_event:EventWriter<InputMovementEvent>,
+  mut ev_trigger_event:EventWriter<InputTriggerEvent>,
+  mut mouse_location:ResMut<MouseResource>
+){
+
+  if buttons.just_pressed(MouseButton::Right){
+    ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Pressed));
+  }
+  if buttons.just_released(MouseButton::Right){
+    ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Released));
+  }
+
+ if  buttons.pressed(MouseButton::Left){
+    if let Some(pos) = window.cursor_position() {
+      if buttons.just_pressed(MouseButton::Left){
+        mouse_location.last_location = pos;
+      }
+      else{
+        let diff = mouse_location.last_location - pos;
+        if diff.length_squared() > 0.5{
+          ev_movement_event.send(InputMovementEvent::new(diff *2. ));
+        }
+        mouse_location.last_location = pos;
+      }
+    }
+  }
+}
 
 
 
