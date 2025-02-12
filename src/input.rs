@@ -1,4 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*, window::PrimaryWindow};
+use bevy::{input::touch::Touch, math::VectorSpace, prelude::*, window::PrimaryWindow};
 
 use crate::scheduling::GameSchedule;
 
@@ -23,7 +23,7 @@ impl Plugin for GameInputPlugin{
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
       .add_systems(Startup, init_input_resources)
-      .add_systems(Update, (read_keys, read_mouse).in_set(GameSchedule::UserInput));
+      .add_systems(Update, (read_keys, read_mouse, read_touch).in_set(GameSchedule::UserInput));
   }
 }
 
@@ -54,15 +54,53 @@ impl InputTriggerEvent{
 
 #[derive(Resource)]
 struct MouseResource{
-  touchdown_location:Vec2,
-  last_location:Vec2,
+  last:Vec2,
+}
+
+#[derive(Resource)]
+struct TouchResource{
+  last:Vec2,
 }
 
 
 fn init_input_resources(mut commands:Commands){
-  commands.insert_resource(MouseResource{ touchdown_location:Vec2::ZERO, last_location:Vec2::ZERO });
+  commands.insert_resource(MouseResource{ last:Vec2::ZERO });
+  commands.insert_resource(TouchResource{ last:Vec2::ZERO });
+}
+
+fn read_touch(
+  touches:Res<Touches>,
+  mut ev_movement_event:EventWriter<InputMovementEvent>,
+  mut ev_trigger_event:EventWriter<InputTriggerEvent>,
+  mut touch_location:ResMut<TouchResource>
+){
+
+  for touch in touches.iter_just_pressed() {
+    if touch.id() == 0{
+      touch_location.last = touch.position();
+    }
+    else if touch.id() == 1{
+      ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Pressed));
+    }
+  }
+  for touch in touches.iter_just_released() {
+    if touch.id() == 1{
+      ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Released));
+    }
+  }
+  
+  for touch in touches.iter() {
+    if touch.id() == 0{
+      let diff = touch_location.last - touch.position();
+      if diff.length_squared() > 0.5{
+        ev_movement_event.send(InputMovementEvent::new(diff *2. ));
+      }
+      touch_location.last = touch.position();
+    }
+  }
 
 }
+
 
 fn read_mouse( 
   buttons:Res<ButtonInput<MouseButton>>,
@@ -82,14 +120,14 @@ fn read_mouse(
  if  buttons.pressed(MouseButton::Left){
     if let Some(pos) = window.cursor_position() {
       if buttons.just_pressed(MouseButton::Left){
-        mouse_location.last_location = pos;
+        mouse_location.last = pos;
       }
       else{
-        let diff = mouse_location.last_location - pos;
+        let diff = mouse_location.last - pos;
         if diff.length_squared() > 0.5{
           ev_movement_event.send(InputMovementEvent::new(diff *2. ));
         }
-        mouse_location.last_location = pos;
+        mouse_location.last = pos;
       }
     }
   }
