@@ -23,7 +23,7 @@ impl Plugin for GameInputPlugin{
       .add_event::<InputMovementEvent>()
       .add_event::<InputTriggerEvent>()
       .add_systems(Startup, init_input_resources)
-      .add_systems(Update, (read_keys, read_mouse, read_touch).in_set(GameSchedule::UserInput));
+      .add_systems(Update, (read_keys, read_mouse, read_touch,read_gamepads).in_set(GameSchedule::UserInput));
   }
 }
 
@@ -66,6 +66,32 @@ struct TouchResource{
 fn init_input_resources(mut commands:Commands){
   commands.insert_resource(MouseResource{ last:Vec2::ZERO });
   commands.insert_resource(TouchResource{ last:Vec2::ZERO });
+}
+
+
+
+fn read_gamepads(
+  gamepads: Query<&Gamepad>,
+  mut ev_movement_event:EventWriter<InputMovementEvent>,
+  mut ev_trigger_event:EventWriter<InputTriggerEvent>,
+){
+  for gamepad in &gamepads {
+    if gamepad.just_pressed(GamepadButton::South) {
+      ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Pressed));
+    }
+    else if gamepad.just_released(GamepadButton::South) {
+      ev_trigger_event.send(InputTriggerEvent::new(InputEventAction::Shoot, InputEventType::Released));
+    }
+
+    let left_stick_x = gamepad.get(GamepadAxis::LeftStickX).unwrap();
+    let left_stick_y = gamepad.get(GamepadAxis::LeftStickY).unwrap();
+    let dir:Vec2 = Vec2::new(-left_stick_x, left_stick_y);
+
+    if dir.length_squared() > 0.1{
+      ev_movement_event.send(InputMovementEvent::new(dir));
+
+    }
+  }
 }
 
 fn read_touch(
