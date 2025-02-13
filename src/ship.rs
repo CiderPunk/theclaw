@@ -2,7 +2,14 @@ use bevy::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets, collision_detection::{Collider, Player}, health::Health, hook::{HookLaunchEvent, HookReturnedEvent}, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Velocity}, scheduling::GameSchedule, state::GameState
+  asset_loader::SceneAssets,
+  collision_detection::{Collider, Player},
+  health::Health,
+  hook::{hook_builder, Hook, HookControlEvent, HookControlEventType, HookReturnedEvent},
+  input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
+  movement::{Acceleration, Velocity},
+  scheduling::GameSchedule,
+  state::GameState,
 };
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0, 0.0, 0.0);
@@ -40,9 +47,7 @@ fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
   commands
     .spawn((
       PlayerShip {
-        target_pitch: 0.,
-        pitch: 0.,
-        hook_out: false,
+        ..default()
       },
       SceneRoot(scene_assets.ship.clone()),
       Transform::from_translation(STARTING_TRANSLATION),
@@ -69,7 +74,8 @@ fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
 pub struct PlayerShip {
   target_pitch: f32,
   pitch: f32,
-  hook_out: bool,
+  //hook_out: bool,
+  hook:Option<Entity>,
 }
 
 #[derive(Component)]
@@ -90,50 +96,52 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
 }
 
 fn fire_controls(
+  mut commands:Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
-  mut ev_trigger_event:EventReader<InputTriggerEvent>,
+  mut ev_trigger_event: EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
-  mut ev_hook_launch: EventWriter<HookLaunchEvent>,
+  scene_assets: Res<SceneAssets>,
 ) {
   let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
     return;
   };
 
   let mut shoot = false;
-  for InputTriggerEvent { action, input_type } in ev_trigger_event.read(){
-    if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed{
+  for InputTriggerEvent { action, input_type } in ev_trigger_event.read() {
+    if *action == InputEventAction::Shoot && *input_type == InputEventType::Pressed {
       shoot = true;
     }
   }
-
-  if !shoot{
+  if !shoot {
     return;
   }
-  
-  if !ship.hook_out {
-    let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
-      return;
-    };
-    ship.hook_out = true;
-    *display_hook_visible = Visibility::Hidden;
-    ev_hook_launch.send(HookLaunchEvent::new(
-      entity,
-      transform.translation(),
-      velocity.0,
-    ));
+  match ship.hook{
+    Some(hook) =>{
+
+
+    }
+    None =>{
+      let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
+        return;
+      };
+      *display_hook_visible = Visibility::Hidden;
+      ship.hook = Some(commands.spawn(
+        hook_builder(entity, transform.translation(), velocity.0, scene_assets.hook.clone())
+      ).id());
+    }
   }
 }
 
 fn movement_controls(
   mut query: Query<(&mut Acceleration, &mut PlayerShip)>,
-  mut ev_movement_event:EventReader<InputMovementEvent>,
+  mut ev_movement_event: EventReader<InputMovementEvent>,
   //keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
   let Ok((mut acceleration, mut ship)) = query.get_single_mut() else {
     return;
   };
   let mut acc = Vec2::ZERO;
-  for InputMovementEvent { direction } in ev_movement_event.read(){
+  for InputMovementEvent { direction } in ev_movement_event.read() {
     acc += direction;
   }
 
@@ -176,7 +184,7 @@ fn retrieve_hook(
     let Ok(mut ship) = ship_query.get_single_mut() else {
       return;
     };
-    ship.hook_out = false;
+    ship.hook = None;
     //trap target or something
   }
 }

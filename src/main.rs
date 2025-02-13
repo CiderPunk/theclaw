@@ -7,12 +7,12 @@ mod enemy;
 mod game_ui;
 mod health;
 mod hook;
+mod input;
 mod movement;
 mod scheduling;
 mod ship;
 mod sidewinder;
 mod state;
-mod input;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, prelude::*};
@@ -40,7 +40,10 @@ fn main() {
       brightness: 750.0,
     })
     .add_plugins((
-      DefaultPlugins.set(AssetPlugin{ meta_check: AssetMetaCheck::Never, ..Default::default() }),
+      DefaultPlugins.set(AssetPlugin {
+        meta_check: AssetMetaCheck::Never,
+        ..Default::default()
+      }),
       StatePlugin,
       SchedulingPlugin,
       CameraPlugin,
@@ -56,8 +59,6 @@ fn main() {
       HealthPlugin,
       HookPlugin,
     ))
-    .add_plugins((
-      GameInputPlugin,
-    ))
+    .add_plugins((GameInputPlugin,))
     .run();
 }
