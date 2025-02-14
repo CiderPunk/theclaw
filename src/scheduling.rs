@@ -15,18 +15,21 @@ pub struct SchedulingPlugin;
 
 impl Plugin for SchedulingPlugin {
   fn build(&self, app: &mut App) {
-    app.configure_sets(
-      Update,
-      (
-        GameSchedule::DespawnEntities,
-        GameSchedule::UserInput,
-        GameSchedule::EntityUpdates,
-        GameSchedule::BoundsCheck,
+    app
+      .configure_sets(
+        Update,
+        (
+          GameSchedule::DespawnEntities,
+          GameSchedule::UserInput,
+          GameSchedule::EntityUpdates,
+          GameSchedule::BoundsCheck,
+        )
+          .chain()
+          .run_if(in_state(GameState::Playing)),
       )
-        .chain()
-        .run_if(in_state(GameState::Playing)),
-    ).configure_sets(Last, 
-      GameSchedule::CollisionDetection.run_if(in_state(GameState::Playing))
-    );
+      .configure_sets(
+        Last,
+        GameSchedule::CollisionDetection.run_if(in_state(GameState::Playing)),
+      );
   }
 }

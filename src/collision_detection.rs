@@ -1,11 +1,6 @@
 use bevy::{math::VectorSpace, prelude::*};
 
-use crate::{
-  bullet::Bullet,
-  health::Health,
-  hook::Hook,
-  scheduling::GameSchedule,
-};
+use crate::{bullet::Bullet, health::Health, hook::Hook, scheduling::GameSchedule};
 
 pub struct CollsionDetectionPlugin;
 
