@@ -49,7 +49,6 @@ fn main() {
           primary_window: Some(Window{
             title: APP_NAME.into(),
             name: Some(APP_NAME.into()),
-            canvas: Some(CANVAS_ID.into()),
             fit_canvas_to_parent: true,
             visible: false,
             ..default()
