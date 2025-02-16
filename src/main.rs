@@ -15,7 +15,7 @@ mod sidewinder;
 mod state;
 
 use asset_loader::AssetLoaderPlugin;
-use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*};
+use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
 use bounds_check::BoundsCheckPlugin;
 use bullet::BulletPlugin;
 use camera::CameraPlugin;
@@ -30,11 +30,10 @@ use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
-use state::{GameState, StatePlugin};
+use state::{GameState, GameStateEvent, StatePlugin};
 
 
 const APP_NAME:&str = "The Claw 2";
-const CANVAS_ID:&str = "game_canvas";
 
 fn main() {
   App::new()
@@ -79,15 +78,24 @@ fn main() {
     ))
     .add_plugins((GameInputPlugin,))
     .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
+    
+    .add_systems(PreUpdate, check_window)
     .run();
+}
+
+fn check_window(
+  mut ev_windows_close_reader: EventReader<WindowCloseRequested>,
+  mut ev_game_state_writer: EventWriter<GameStateEvent>,
+){
+  for _ in ev_windows_close_reader.read() {
+    ev_game_state_writer.send(GameStateEvent::new(GameState::Shutdown));
+  }
 }
 
 
 fn make_visible(mut window:Single<&mut Window>, frames:Res<FrameCount>){
-
   info!("frame {:?}", frames.0);
   if frames.0 == 1{
     window.visible = true;
   }
-
 }

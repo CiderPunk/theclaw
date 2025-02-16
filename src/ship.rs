@@ -5,7 +5,7 @@ use crate::{
   asset_loader::SceneAssets,
   collision_detection::{Collider, Player},
   health::Health,
-  hook::{hook_builder, Hook, HookControlEvent, HookControlEventType, HookReturnedEvent},
+  hook::{hook_builder, Hook, HookReturnedEvent},
   input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,
@@ -87,7 +87,7 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
   };
   let diff = ship.target_pitch - ship.pitch;
   let max_turn = SHIP_PITCH_RATE * time.delta_secs();
-  if max_turn > diff.abs() {
+  if max_turn > diff.abs(){
     ship.pitch = ship.target_pitch;
   } else {
     ship.pitch += diff.signum() * max_turn;
@@ -100,6 +100,7 @@ fn fire_controls(
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
   mut ev_trigger_event: EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
+  mut hook_query:Query<&mut Hook>,
   scene_assets: Res<SceneAssets>,
 ) {
   let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
@@ -117,8 +118,9 @@ fn fire_controls(
   }
   match ship.hook{
     Some(hook) =>{
-
-
+      let Ok(mut hook_state) = hook_query.get_mut(hook)
+      else { return; };
+      hook_state.returning = true;
     }
     None =>{
       let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
