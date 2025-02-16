@@ -27,6 +27,7 @@ pub enum GameState {
   #[default]
   Loading,
   Playing,
+  Shutdown,
   // Paused,
 }
 

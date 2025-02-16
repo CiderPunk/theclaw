@@ -18,8 +18,8 @@ const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED: Vec3 = Vec3::new(12., 0., 0.);
 const SIDEWINDER_COLLISION_RADIUS: f32 = 1.5;
 
-const SIDEWINDER_HOOK_TRANSLATION: Vec3 = Vec3::new(1., 0., 0.);
-const SIDEWINDER_HOOK_ROTATION: f32 = PI;
+const SIDEWINDER_HOOK_TRANSLATION: Vec3 = Vec3::new(-3., 0., 0.);
+const SIDEWINDER_HOOK_ROTATION: f32 =0.0;
 
 pub struct SidewinderPlugin;
 
@@ -69,7 +69,7 @@ fn shoot(
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
       ev_shoot_event_writer.send(ShootEvent::new(
-        transform.translation(),
+        transform.translation()+(transform.left()*3.0),
         velocity.0 + SIDEWINDER_SHOOT_SPEED,
       ));
     }
@@ -88,7 +88,6 @@ fn spawn_sidewinder(
   }
 
   let mut rng = rand::thread_rng();
-
   let spawn_pos = rng.gen_range(-1. ..1.);
   let start_z = ENEMY_START_POINT_Z_BOUNDS_MAX * spawn_pos;
   let vel_z = spawn_pos * -SIDEWINDER_VERTICAL_VARIANCE;

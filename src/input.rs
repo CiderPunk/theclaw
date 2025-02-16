@@ -183,7 +183,7 @@ fn read_keys(
   if keyboard_input.pressed(KeyCode::KeyS) {
     dir.y -= 1.;
   }
-  if (dir != Vec2::ZERO) {
+  if dir != Vec2::ZERO {
     ev_movement_event.send(InputMovementEvent::new(dir));
   }
 
