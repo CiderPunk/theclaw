@@ -1453,7 +1453,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "claw"
+name = "claw2"
 version = "0.1.0"
 dependencies = [
  "bevy",

@@ -6,7 +6,7 @@ description = "The Claw 2 - electric boogaloo"
 
 
 [dependencies]
-bevy = { version = "0.15.2", default-features= true, features=[ "android-native-activity"]  }
+bevy =  "0.15.2"
 rand = "0.8.5"
 
 [lib]
@@ -19,7 +19,7 @@ crate-type = [
 ]
 
 [[bin]]
-name = "blaw2"
+name = "claw2"
 path = "src/main.rs"
 
 # Enable a small amount of optimization in the dev profile.
@@ -30,20 +30,4 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
-[package.metadata.android]
-package = "net.ciderpunk.claw2"
-apk_name = "claw2"
-assets = "assets"
-resources = "assets/android-res"
-# This strips debug symbols from the shared libraries, drastically reducing APK size. If you need them, remove the option.
-strip = "strip"
-#build_targets = ["aarch64-linux-android", "armv7-linux-androideabi"]
-build_targets = ["aarch64-linux-android"]
-
-[package.metadata.android.sdk]
-target_sdk_version = 33
-
-[package.metadata.android.application]
-icon = "@mipmap/ic_launcher"
-label = "Claw 2"
 
