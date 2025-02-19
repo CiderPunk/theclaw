@@ -8,3 +8,4 @@ models/claw2.blend1
 app/src/main/jniLibs/arm64-v8a/libclaw2.so
 app/src/main/jniLibs/arm64-v8a/libc++_shared.so
 /gradle/wrapper
+app/release/app-release.aab

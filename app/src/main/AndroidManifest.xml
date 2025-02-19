@@ -7,7 +7,7 @@
         android:label="claw2"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.AppCompat.NoActionBar"
-        tools:targetApi="33">
+        tools:targetApi="34">
         <activity
             android:name=".MainActivity"
             android:exported="true"
