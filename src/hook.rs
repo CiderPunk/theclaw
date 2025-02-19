@@ -3,7 +3,6 @@ use std::f32::consts::PI;
 use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
-  asset_loader::SceneAssets,
   collision_detection::{Collider, CollisionEvent, Player},
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,

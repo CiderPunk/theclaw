@@ -8,7 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  binary: claw
+  binary: claw2
   use_git_lfs: false
   itch_target: CiderPunk/the-claw-2
   

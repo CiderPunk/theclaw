@@ -1,4 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
 use crate::{bullet::Bullet, health::Health, hook::Hook, scheduling::GameSchedule};
 

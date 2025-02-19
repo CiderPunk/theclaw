@@ -10,7 +10,7 @@ android {
         applicationId "net.ciderpunk.claw2"
         minSdk 33
         targetSdk 34
-        versionCode 3
+        versionCode 4
         versionName "1.2"
         // need this otherwise it won't insert libc++_shared.so
         externalNativeBuild {
