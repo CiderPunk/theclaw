@@ -1,11 +1,26 @@
 [package]
-name = "claw"
-version = "0.1.0"
+name = "claw2"
+version = "0.1.1"
 edition = "2021"
+description = "The Claw 2 - electric boogaloo"
+
 
 [dependencies]
-bevy = "0.15.2"
+bevy =  "0.15.2"
 rand = "0.8.5"
+
+[lib]
+name = "claw2"
+path = "src/lib.rs"
+crate-type = [
+    "staticlib",
+    "cdylib",    # needed for Android
+    "rlib",      # rlib needed for running locally
+]
+
+[[bin]]
+name = "claw2"
+path = "src/main.rs"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
@@ -14,3 +29,5 @@ opt-level = 1
 # Enable a large amount of optimization in the dev profile for dependencies.
 [profile.dev.package."*"]
 opt-level = 3
+
+
