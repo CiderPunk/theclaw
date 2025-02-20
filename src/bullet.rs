@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, movement::Velocity,
-  scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Player, movement::Velocity, scheduling::GameSchedule
 };
 
 pub struct BulletPlugin;
@@ -21,13 +20,14 @@ impl Plugin for BulletPlugin {
 
 #[derive(Event)]
 pub struct ShootEvent {
+  pub is_player: bool,
   pub start: Vec3,
   pub velocity: Vec3,
 }
 
 impl ShootEvent {
-  pub fn new(start: Vec3, velocity: Vec3) -> Self {
-    Self { start, velocity }
+  pub fn new(is_player:bool, start: Vec3, velocity: Vec3) -> Self {
+    Self { is_player, start, velocity }
   }
 }
 
@@ -43,17 +43,34 @@ fn do_shooting(
   mut ev_shoot_events: EventReader<ShootEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
-  for &ShootEvent { start, velocity } in ev_shoot_events.read() {
-    commands.spawn((
-      Bullet {
-        hit: false,
-        damage: 20.0,
-      },
-      Mesh3d(scene_assets.bullet.clone()),
-      MeshMaterial3d(scene_assets.bullet_material.clone()),
-      Transform::from_translation(start),
-      Velocity(velocity),
-    ));
+  for &ShootEvent {is_player, start, velocity } in ev_shoot_events.read() {
+//FIXME: yuck
+    if is_player{
+      commands.spawn((
+        Bullet {
+          hit: false,
+          damage: 20.0,
+        },
+        Mesh3d(scene_assets.bullet.clone()),
+        MeshMaterial3d(scene_assets.bullet_material.clone()),
+        Transform::from_translation(start),
+        Velocity(velocity),
+        Player,
+      ));
+    }
+    else{
+      commands.spawn((
+        Bullet {
+          hit: false,
+          damage: 20.0,
+        },
+        Mesh3d(scene_assets.bullet.clone()),
+        MeshMaterial3d(scene_assets.bullet_material.clone()),
+        Transform::from_translation(start),
+        Velocity(velocity),
+
+      ));
+    }
   }
 }
 
