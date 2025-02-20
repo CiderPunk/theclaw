@@ -15,7 +15,7 @@ use crate::{
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
 const SIDEWINDER_SPIN_SPEED: f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
-const SIDEWINDER_SHOOT_SPEED: Vec3 = Vec3::new(12., 0., 0.);
+const SIDEWINDER_SHOOT_SPEED: f32 = 12.0;
 const SIDEWINDER_COLLISION_RADIUS: f32 = 1.5;
 
 
@@ -80,7 +80,7 @@ fn shoot_captured(
       ev_shoot_event_writer.send(ShootEvent::new(
         true,
         transform.translation()+(transform.left()*3.0),
-        -SIDEWINDER_SHOOT_SPEED + velocity.0,
+        velocity.0 +  (transform.left() * SIDEWINDER_SHOOT_SPEED),
       ));
     }
   }
@@ -102,7 +102,7 @@ fn shoot(
       ev_shoot_event_writer.send(ShootEvent::new(
         false,
         transform.translation()+(transform.left()*3.0),
-        velocity.0 + SIDEWINDER_SHOOT_SPEED,
+        velocity.0 + ( transform.left() * SIDEWINDER_SHOOT_SPEED),
       ));
     }
   }
