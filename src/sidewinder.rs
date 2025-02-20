@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use rand::Rng;
-use std::f32::consts::PI;
+use std::{f32::consts::PI, time::Duration};
 
 use crate::{
   asset_loader::SceneAssets,
@@ -8,8 +8,8 @@ use crate::{
   bullet::ShootEvent,
   collision_detection::Collider,
   enemy::*,
-  hook::{Captured, Hookable, Hooked},
-  movement::Velocity,
+  hook::{Hookable, Hooked},
+  movement::Velocity, scheduling::GameSchedule, ship::Captured,
 };
 
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
@@ -18,6 +18,11 @@ const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED: Vec3 = Vec3::new(12., 0., 0.);
 const SIDEWINDER_COLLISION_RADIUS: f32 = 1.5;
 
+
+const SIDEWINDER_SHOOT_TIME:f32 = 1.7; 
+const SIDEWINDER_CAPTURED_SHOOT_TIME:f32 = 0.6; 
+
+
 const SIDEWINDER_HOOK_TRANSLATION: Vec3 = Vec3::new(-3., 0., 0.);
 const SIDEWINDER_HOOK_ROTATION: f32 =0.0;
 
@@ -25,7 +30,7 @@ pub struct SidewinderPlugin;
 
 impl Plugin for SidewinderPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot));
+    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates));
   }
 }
 
@@ -56,6 +61,32 @@ fn spin_sidewinder(
   }
 }
 
+fn shoot_captured(
+  mut query: Query<(&mut Sidewinder, &GlobalTransform, &Captured)>,
+  captor_query: Query<&Velocity>,
+  time: Res<Time>,
+  mut ev_shoot_event_writer: EventWriter<ShootEvent>,
+) {
+  for (mut sidewinder, transform, captured) in &mut query {
+    let Ok(velocity) = captor_query.get(captured.captor) else{
+      return;
+    };
+
+
+    sidewinder.shoot_timer.set_duration(Duration::from_secs_f32(SIDEWINDER_CAPTURED_SHOOT_TIME));
+    sidewinder.shoot_timer.tick(time.delta());
+    if sidewinder.shoot_timer.finished() {
+      //info!("Shooting");
+      ev_shoot_event_writer.send(ShootEvent::new(
+        true,
+        transform.translation()+(transform.left()*3.0),
+        -SIDEWINDER_SHOOT_SPEED + velocity.0,
+      ));
+    }
+  }
+}
+
+
 fn shoot(
   mut query: Query<
     (&mut Sidewinder, &GlobalTransform, &Velocity),
@@ -69,6 +100,7 @@ fn shoot(
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
       ev_shoot_event_writer.send(ShootEvent::new(
+        false,
         transform.translation()+(transform.left()*3.0),
         velocity.0 + SIDEWINDER_SHOOT_SPEED,
       ));
@@ -95,7 +127,7 @@ fn spawn_sidewinder(
   //info!("Spawn sidewinder");
   commands.spawn((
     Sidewinder {
-      shoot_timer: Timer::from_seconds(1.7, TimerMode::Repeating),
+      shoot_timer: Timer::from_seconds(SIDEWINDER_SHOOT_TIME, TimerMode::Repeating),
     },
     SceneRoot(scene_assets.sidewinder.clone()),
     Transform::from_translation(Vec3::new(ENEMY_START_POINT_X, 0., start_z))

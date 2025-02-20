@@ -5,7 +5,7 @@ use crate::{
   asset_loader::SceneAssets,
   collision_detection::{Collider, Player},
   health::Health,
-  hook::{hook_builder, Hook, HookReturnedEvent},
+  hook::{hook_builder, Hook, HookReturnedEvent, Hookable},
   input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
   movement::{Acceleration, Velocity},
   scheduling::GameSchedule,
@@ -39,7 +39,7 @@ impl Plugin for ShipPlugin {
           .in_set(GameSchedule::UserInput),
       )
       .add_systems(Update, bounds_check.in_set(GameSchedule::BoundsCheck))
-      .add_systems(Update, retrieve_hook.in_set(GameSchedule::DespawnEntities));
+      .add_systems(Update, retrieve_hook.in_set(GameSchedule::EntityUpdates));
   }
 }
 
@@ -76,10 +76,18 @@ pub struct PlayerShip {
   pitch: f32,
   //hook_out: bool,
   hook:Option<Entity>,
+  captive:Option<Entity>,
 }
 
 #[derive(Component)]
 struct DisplayHook;
+
+
+#[derive(Component)]
+pub struct Captured{
+  pub captor:Entity
+}
+
 
 fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
   let Ok((mut ship, mut transform)) = query.get_single_mut() else {
@@ -123,13 +131,22 @@ fn fire_controls(
       hook_state.returning = true;
     }
     None =>{
-      let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
-        return;
-      };
-      *display_hook_visible = Visibility::Hidden;
-      ship.hook = Some(commands.spawn(
-        hook_builder(entity, transform.translation(), velocity.0, scene_assets.hook.clone())
-      ).id());
+      match ship.captive{
+        Some(captive) => {
+          //eat captive?
+          commands.entity(captive).despawn_recursive();
+          ship.captive = None;
+        }
+        None=>{
+          let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
+            return;
+          };
+          *display_hook_visible = Visibility::Hidden;
+          ship.hook = Some(commands.spawn(
+            hook_builder(entity, transform.translation(), velocity.0, scene_assets.hook.clone())
+          ).id());
+        }
+      }
     }
   }
 }
@@ -172,21 +189,37 @@ fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
 }
 
 fn retrieve_hook(
+  mut commands:Commands,
   mut ev_hook_returned: EventReader<HookReturnedEvent>,
   mut display_hook_query: Query<&mut Visibility, With<DisplayHook>>,
-  mut ship_query: Query<&mut PlayerShip>,
+  mut ship_query: Query<(&mut PlayerShip, Entity)>,
+  mut target_query: Query<(&mut Transform, &mut Hookable)>,
 ) {
   for &HookReturnedEvent { target } in ev_hook_returned.read() {
     let Ok(mut visible) = display_hook_query.get_single_mut() else {
       return;
     };
-
-    *visible = Visibility::Visible;
-
-    let Ok(mut ship) = ship_query.get_single_mut() else {
+    let Ok((mut ship, ship_entity)) = ship_query.get_single_mut() else {
       return;
     };
     ship.hook = None;
+    *visible = Visibility::Visible;
+
+    info!("ship hook returned, captive: {:?}", target);
+    match target{
+      Some(target_entity)=>{        
+        let Ok((mut transform, mut hookable)) = target_query.get_mut(target_entity) else{
+          return;
+        };
+
+        ship.captive = Some(target_entity);
+        transform.translation += CLAW_OFFSET;
+        hookable.translation += CLAW_OFFSET;
+        commands.entity(ship_entity).add_child(target_entity);
+        commands.entity(target_entity).insert((Captured{ captor:ship_entity }, Player));
+      },
+      None=>(),
+    }
     //trap target or something
   }
 }

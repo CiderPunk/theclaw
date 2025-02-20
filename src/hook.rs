@@ -40,8 +40,8 @@ impl Plugin for HookPlugin {
 
 #[derive(Component, Default)]
 pub struct Hookable {
-  translation: Vec3,
-  rotation: Quat,
+  pub translation: Vec3,
+  pub rotation: Quat,
 }
 
 impl Hookable {
@@ -59,8 +59,7 @@ pub struct Hooked {
   initial_position: Vec3,
   initial_rotation: Quat,
 }
-#[derive(Component)]
-pub struct Captured {}
+
 
 #[derive(Component)]
 #[require(Acceleration, Velocity, Player)]
@@ -148,6 +147,14 @@ fn retrieve_hook(
     let Ok(entity) = query.get_single() else {
       return;
     };
+
+    info!("hook returned, captive: {:?}", target);
+    match target{
+      Some(target)=>{ 
+        commands.entity(entity).remove_children(&[target]);
+      },
+      None=>(),
+    }
     commands.entity(entity).despawn_recursive();
   }
 }
@@ -168,6 +175,7 @@ fn apply_collisions(
       continue;
     };
     hook.returning = true;
+    hook.target = Some(collided);
     commands.entity(entity).remove::<Collider>().add_child(collided);
     transform.translation = target_transform.translation() - hook_transform.translation();
 

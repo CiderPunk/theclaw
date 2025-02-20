@@ -28,8 +28,8 @@ impl Plugin for SchedulingPlugin {
           .run_if(in_state(GameState::Playing)),
       )
       .configure_sets(
-        Last,
-        GameSchedule::CollisionDetection.run_if(in_state(GameState::Playing)),
+        PostUpdate,
+        GameSchedule::CollisionDetection.after(TransformSystem::TransformPropagate).run_if(in_state(GameState::Playing)),
       );
   }
 }
