@@ -10,3 +10,4 @@ app/src/main/jniLibs/arm64-v8a/libc++_shared.so
 /gradle/wrapper
 app/release/app-release.aab
 app/src/main/jniLibs/arm64-v8a/libclaw2_lib.so
+/models/cache_fluid_4b85f272

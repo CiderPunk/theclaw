@@ -3,7 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::Velocity, scheduling::GameSchedule, ship::Captured
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::Velocity, scheduling::GameSchedule, ship::Captured, splosion::SplosionEvent
 };
 
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
@@ -25,7 +25,9 @@ pub struct SidewinderPlugin;
 
 impl Plugin for SidewinderPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates));
+    app
+      .add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, check_dead.in_set(GameSchedule::PreDespawnEntities));
   }
 }
 
@@ -66,8 +68,6 @@ fn shoot_captured(
     let Ok(velocity) = captor_query.get(captured.captor) else{
       return;
     };
-
-
     sidewinder.shoot_timer.set_duration(Duration::from_secs_f32(SIDEWINDER_CAPTURED_SHOOT_TIME));
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
@@ -80,7 +80,6 @@ fn shoot_captured(
     }
   }
 }
-
 
 fn shoot(
   mut query: Query<
@@ -102,6 +101,15 @@ fn shoot(
     }
   }
 }
+
+fn check_dead(query:Query<(&Health, &GlobalTransform, &Velocity), With<Sidewinder>>, mut ev_splosion_writer:EventWriter<SplosionEvent>){
+  for(health, transform, velocity) in query.iter(){
+    if health.0 <= 0.{
+      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 1.0,velocity.0));
+    }
+  }
+}
+
 
 fn spawn_sidewinder(
   mut commands: Commands,

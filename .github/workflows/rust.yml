@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release --target wasm32-unknown-unknown --api webgpu
+          cargo build --release --target wasm32-unknown-unknown 
 
       - name: Prepare package
         run: |

@@ -21,6 +21,8 @@ struct ShipScene(Handle<Gltf>);
 #[derive(Resource)]
 struct GameFont(Handle<Font>);
 
+
+
 pub struct AssetLoaderPlugin;
 
 impl Plugin for AssetLoaderPlugin {
@@ -39,7 +41,9 @@ fn load_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
 
   let font = asset_server.load("fonts/OpenSans_Condensed-Bold.ttf");
   commands.insert_resource(GameFont(font));
-}
+
+
+} 
 
 fn extract_assets(
   mut scene_assets: ResMut<SceneAssets>,
@@ -55,7 +59,6 @@ fn extract_assets(
   };
 
   info!("extracting assets");
-
   *scene_assets = SceneAssets {
     ship: gltf.named_scenes["ClawShip"].clone(),
     sidewinder: gltf.named_scenes["Sidewinder"].clone(),

@@ -9,12 +9,8 @@ pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(Update, health_check.in_set(GameSchedule::DespawnEntities));
-
-
   }
 }
-
-
 
 fn health_check(mut commands:Commands, query:Query<(&Health, Entity)>){
   for (health, entity) in query.iter(){
