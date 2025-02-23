@@ -17,10 +17,6 @@ pub const HOOK_DAMPING: f32 = 5.0;
 pub const HOOK_COLLISION_RADIUS: f32 = 1.0;
 pub const HOOK_CENTERING_SPEED: f32 = 3.0;
 
-
-
-
-
 pub struct HookPlugin;
 impl Plugin for HookPlugin {
   fn build(&self, app: &mut App) {
