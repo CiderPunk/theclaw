@@ -84,11 +84,9 @@ fn read_gamepads(
         InputEventType::Released,
       ));
     }
-
     let left_stick_x = gamepad.get(GamepadAxis::LeftStickX).unwrap();
     let left_stick_y = gamepad.get(GamepadAxis::LeftStickY).unwrap();
     let dir: Vec2 = Vec2::new(-left_stick_x, left_stick_y);
-
     if dir.length_squared() > 0.1 {
       ev_movement_event.send(InputMovementEvent::new(dir));
     }
@@ -104,7 +102,7 @@ fn read_touch(
 
   for touch in touches.iter_just_pressed() {
     //fisrt touch down is our move finger
-    info!("touch down: {:?}", touch.id());
+    //info!("touch down: {:?}", touch.id());
     if touch_tracker.move_finger.is_none(){
       touch_tracker.move_finger = Some(touch.id());
       touch_tracker.last = touch.position();
@@ -121,7 +119,7 @@ fn read_touch(
 
   for touch in touches.iter_just_released() {
     //release movement
-    info!("touch up: {:?}", touch.id());
+    //info!("touch up: {:?}", touch.id());
     if touch_tracker.move_finger == Some(touch.id()){
       touch_tracker.move_finger = None;
     }
@@ -147,7 +145,6 @@ fn read_touch(
           touch_tracker.last = touch.position();
         }
       }
-      
       if !found{
         touch_tracker.move_finger = None;
       }
