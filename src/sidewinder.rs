@@ -3,24 +3,19 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds_check::BoundsDespawn,
-  bullet::ShootEvent,
-  collision_detection::Collider,
-  enemy::*,
-  hook::{Hookable, Hooked},
-  movement::Velocity, scheduling::GameSchedule, ship::Captured,
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::Velocity, scheduling::GameSchedule, ship::Captured
 };
 
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
 const SIDEWINDER_SPIN_SPEED: f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
-const SIDEWINDER_SHOOT_SPEED: Vec3 = Vec3::new(12., 0., 0.);
-const SIDEWINDER_COLLISION_RADIUS: f32 = 1.5;
+const SIDEWINDER_SHOOT_SPEED: f32 = 16.0;
+const SIDEWINDER_COLLISION_RADIUS: f32 = 2.5;
 
 
 const SIDEWINDER_SHOOT_TIME:f32 = 1.7; 
-const SIDEWINDER_CAPTURED_SHOOT_TIME:f32 = 0.6; 
+const SIDEWINDER_CAPTURED_SHOOT_TIME:f32 = 0.4; 
+const SIDEWINDER_CAPTURED_SHOOT_SPEED:f32 = 48.0; 
 
 
 const SIDEWINDER_HOOK_TRANSLATION: Vec3 = Vec3::new(-3., 0., 0.);
@@ -80,7 +75,7 @@ fn shoot_captured(
       ev_shoot_event_writer.send(ShootEvent::new(
         true,
         transform.translation()+(transform.left()*3.0),
-        -SIDEWINDER_SHOOT_SPEED + velocity.0,
+         (transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED),
       ));
     }
   }
@@ -102,7 +97,7 @@ fn shoot(
       ev_shoot_event_writer.send(ShootEvent::new(
         false,
         transform.translation()+(transform.left()*3.0),
-        velocity.0 + SIDEWINDER_SHOOT_SPEED,
+        velocity.0 + ( transform.left() * SIDEWINDER_SHOOT_SPEED),
       ));
     }
   }
@@ -140,5 +135,6 @@ fn spawn_sidewinder(
       SIDEWINDER_HOOK_TRANSLATION,
       Quat::from_rotation_z(SIDEWINDER_HOOK_ROTATION),
     ),
+    Health(25.0),
   ));
 }

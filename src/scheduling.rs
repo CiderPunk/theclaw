@@ -9,6 +9,7 @@ pub enum GameSchedule {
   BoundsCheck,
   CollisionDetection,
   DespawnEntities,
+  PreDespawnEntities,
 }
 
 pub struct SchedulingPlugin;
@@ -19,10 +20,12 @@ impl Plugin for SchedulingPlugin {
       .configure_sets(
         Update,
         (
+          GameSchedule::PreDespawnEntities,
           GameSchedule::DespawnEntities,
           GameSchedule::UserInput,
           GameSchedule::EntityUpdates,
           GameSchedule::BoundsCheck,
+
         )
           .chain()
           .run_if(in_state(GameState::Playing)),
