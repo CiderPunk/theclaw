@@ -58,12 +58,13 @@ struct MouseResource {
 
 #[derive(Resource)]
 struct TouchResource {
+  move_finger: Option<u64>,
   last: Vec2,
 }
 
 fn init_input_resources(mut commands: Commands) {
   commands.insert_resource(MouseResource { last: Vec2::ZERO });
-  commands.insert_resource(TouchResource { last: Vec2::ZERO });
+  commands.insert_resource(TouchResource { last: Vec2::ZERO, move_finger:None, });
 }
 
 fn read_gamepads(
@@ -98,16 +99,18 @@ fn read_touch(
   touches: Res<Touches>,
   mut ev_movement_event: EventWriter<InputMovementEvent>,
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
-  mut touch_location: ResMut<TouchResource>,
+  mut touch_tracker: ResMut<TouchResource>,
 ) {
 
-
   for touch in touches.iter_just_pressed() {
-
+    //fisrt touch down is our move finger
     info!("touch down: {:?}", touch.id());
-    if touch.id() == 0 {
-      touch_location.last = touch.position();
-    } else if touch.id() == 1 {
+    if touch_tracker.move_finger.is_none(){
+      touch_tracker.move_finger = Some(touch.id());
+      touch_tracker.last = touch.position();
+    }
+    else{
+      //second is our shoot action
       ev_trigger_event.send(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
@@ -115,23 +118,33 @@ fn read_touch(
     }
   }
   for touch in touches.iter_just_released() {
+    //release movement
     info!("touch up: {:?}", touch.id());
-    if touch.id() == 1 {
+    if touch_tracker.move_finger == Some(touch.id()){
+      touch_tracker.move_finger = None;
+    }
+    else{
+      //or stop firing
       ev_trigger_event.send(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Released,
       ));
     }
   }
-
-  for touch in touches.iter() {
-    if touch.id() == 0 {
-      let diff = touch_location.last - touch.position();
-      if diff.length_squared() > 0.5 {
-        ev_movement_event.send(InputMovementEvent::new(diff * 2.));
+  match touch_tracker.move_finger{
+    Some(finger)=>{
+      for touch in touches.iter() {
+        //move finger movement tracking
+        if finger == touch.id() {
+          let diff = touch_tracker.last - touch.position();
+          if diff.length_squared() > 0.5 {
+            ev_movement_event.send(InputMovementEvent::new(diff * 2.));
+          }
+          touch_tracker.last = touch.position();
+        }
       }
-      touch_location.last = touch.position();
-    }
+    },
+    None=>(),
   }
 }
 
