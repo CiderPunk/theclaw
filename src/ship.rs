@@ -39,7 +39,8 @@ impl Plugin for ShipPlugin {
           .in_set(GameSchedule::UserInput),
       )
       .add_systems(Update, bounds_check.in_set(GameSchedule::BoundsCheck))
-      .add_systems(Update, retrieve_hook.in_set(GameSchedule::EntityUpdates));
+      .add_systems(Update, retrieve_hook.in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, remove_dead_captive.in_set(GameSchedule::PreDespawnEntities));
   }
 }
 
@@ -221,5 +222,24 @@ fn retrieve_hook(
       None=>(),
     }
     //trap target or something
+  }
+}
+
+
+fn remove_dead_captive(
+  mut commands:Commands,
+  query:Query<(Entity, &Captured, &Health)>,
+  mut ship_query:Query<&mut PlayerShip>,
+){
+  let Ok((captive_entity, captured, health)) = query.get_single() else {
+    return;
+  };
+  if health.0 <= 0.{
+    info!("removing dead captive: {:?}", captive_entity);
+    commands.entity(captured.captor).remove_children(&[captive_entity]);
+    let Ok(mut ship) = ship_query.get_mut(captured.captor) else{
+      return;
+    };
+    ship.captive = None;
   }
 }

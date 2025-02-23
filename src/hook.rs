@@ -14,7 +14,7 @@ pub const HOOK_LAUNCH_SPEED: f32 = 60.0;
 pub const HOOK_MAX_SPEED: f32 = 80.0;
 pub const HOOK_RETURN_ACCELERATION: f32 = 800.0;
 pub const HOOK_DAMPING: f32 = 5.0;
-pub const HOOK_COLLISION_RADIUS: f32 = 2.0;
+pub const HOOK_COLLISION_RADIUS: f32 = 1.0;
 pub const HOOK_CENTERING_SPEED: f32 = 3.0;
 
 

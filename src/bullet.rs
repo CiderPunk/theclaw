@@ -68,7 +68,6 @@ fn do_shooting(
         MeshMaterial3d(scene_assets.bullet_material.clone()),
         Transform::from_translation(start),
         Velocity(velocity),
-
       ));
     }
   }
