@@ -100,7 +100,11 @@ fn read_touch(
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
   mut touch_location: ResMut<TouchResource>,
 ) {
+
+
   for touch in touches.iter_just_pressed() {
+
+    info!("touch down: {:?}", touch.id());
     if touch.id() == 0 {
       touch_location.last = touch.position();
     } else if touch.id() == 1 {
@@ -111,6 +115,7 @@ fn read_touch(
     }
   }
   for touch in touches.iter_just_released() {
+    info!("touch up: {:?}", touch.id());
     if touch.id() == 1 {
       ev_trigger_event.send(InputTriggerEvent::new(
         InputEventAction::Shoot,
