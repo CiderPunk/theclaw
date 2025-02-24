@@ -59,18 +59,13 @@ fn spin_sidewinder(
 }
 
 fn shoot_captured(
-  mut query: Query<(&mut Sidewinder, &GlobalTransform, &Captured)>,
+  mut query: Query<(&mut Sidewinder, &GlobalTransform), With<Captured>>,
   //captor_query: Query<&Velocity>,
   time: Res<Time>,
   mut ev_shoot_event_writer: EventWriter<ShootEvent>,
 ) {
-  for (mut sidewinder, transform, captured) in &mut query {
+  for (mut sidewinder, transform) in &mut query {
     
-    /*
-    let Ok(velocity) = captor_query.get(captured.captor) else{
-      return;
-    };
-     */
     sidewinder.shoot_timer.set_duration(Duration::from_secs_f32(SIDEWINDER_CAPTURED_SHOOT_TIME));
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
