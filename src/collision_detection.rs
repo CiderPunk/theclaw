@@ -8,7 +8,7 @@ impl Plugin for CollsionDetectionPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(
-        Update,
+        PostUpdate,
         (
           player_bullet_collision_detection,
           enemy_bullet_collision_detection,

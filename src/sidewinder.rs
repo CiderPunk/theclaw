@@ -60,14 +60,17 @@ fn spin_sidewinder(
 
 fn shoot_captured(
   mut query: Query<(&mut Sidewinder, &GlobalTransform, &Captured)>,
-  captor_query: Query<&Velocity>,
+  //captor_query: Query<&Velocity>,
   time: Res<Time>,
   mut ev_shoot_event_writer: EventWriter<ShootEvent>,
 ) {
   for (mut sidewinder, transform, captured) in &mut query {
+    
+    /*
     let Ok(velocity) = captor_query.get(captured.captor) else{
       return;
     };
+     */
     sidewinder.shoot_timer.set_duration(Duration::from_secs_f32(SIDEWINDER_CAPTURED_SHOOT_TIME));
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
@@ -105,7 +108,9 @@ fn shoot(
 fn check_dead(query:Query<(&Health, &GlobalTransform, &Velocity), With<Sidewinder>>, mut ev_splosion_writer:EventWriter<SplosionEvent>){
   for(health, transform, velocity) in query.iter(){
     if health.0 <= 0.{
-      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 1.0,velocity.0));
+
+      info!("dead");
+      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 2.0,velocity.0));
     }
   }
 }
