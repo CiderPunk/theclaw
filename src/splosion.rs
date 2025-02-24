@@ -52,7 +52,12 @@ impl Plugin for SplosionPlugin{
   } 
 }
 
-fn init_splosion(mut commands:Commands, mut meshes:ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<SplosionMaterial>>,  asset_server: Res<AssetServer>){
+fn init_splosion(
+  mut commands:Commands, 
+  mut meshes:ResMut<Assets<Mesh>>, 
+  mut materials: ResMut<Assets<SplosionMaterial>>,  
+  asset_server: Res<AssetServer>
+){
   let quad = meshes.add(Rectangle::new(8.0, 8.0));
   commands.insert_resource(SplosionQuad(quad));
   let splosion_texture:Handle<Image> = asset_server.load("sprites/splosion.png");

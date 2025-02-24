@@ -159,25 +159,26 @@ fn apply_collisions(
   mut commands: Commands,
   mut ev_collision: EventReader<CollisionEvent>,
   mut hook_query: Query<(&mut Hook, &GlobalTransform)>,
-  mut target_query: Query<(&mut Transform, &GlobalTransform),(With<Hookable>, Without<Hook>)>,
+  mut target_query: Query<(&mut Transform, &mut Velocity, &GlobalTransform),(With<Hookable>, Without<Hook>)>,
 ) {
   for &CollisionEvent { entity, collided } in ev_collision.read() {
     let Ok((mut hook, hook_transform)) = hook_query.get_mut(entity) else {
       continue;
     };
-    let Ok((mut transform, target_transform)) =
+    let Ok((mut transform, mut target_velocity, target_transform)) =
       target_query.get_mut(collided)
     else {
       continue;
     };
+    target_velocity.0 = Vec3::ZERO;
+    //target_acceleration.acceleration = Vec3::ZERO;
     hook.returning = true;
     hook.target = Some(collided);
     commands.entity(entity).remove::<Collider>().add_child(collided);
     transform.translation = target_transform.translation() - hook_transform.translation();
 
     commands.entity(collided)
-    .remove::<Acceleration>()
-    .remove::<Velocity>()
+
     .remove::<Roller>()
     .insert(Hooked {
       time: Stopwatch::new(),

@@ -27,7 +27,7 @@ impl Plugin for SidewinderPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_systems(Update, (spawn_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates))
-      .add_systems(Update, check_dead.in_set(GameSchedule::PreDespawnEntities));
+      .add_systems(Update, check_dead.in_set(GameSchedule::DespawnEntities));
   }
 }
 
@@ -92,12 +92,13 @@ fn shoot(
   }
 }
 
-fn check_dead(query:Query<(&Health, &GlobalTransform, &Velocity), With<Sidewinder>>, mut ev_splosion_writer:EventWriter<SplosionEvent>){
-  for(health, transform, velocity) in query.iter(){
+fn check_dead(mut commands:Commands, query:Query<(Entity, &Health, &GlobalTransform, &Velocity), With<Sidewinder>>, mut ev_splosion_writer:EventWriter<SplosionEvent>){
+  for(entity, health, transform, velocity) in query.iter(){
     if health.0 <= 0.{
-
       info!("dead");
       ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
+      // commands.entity(entity).
+      commands.entity(entity).despawn_recursive();
     }
   }
 }
