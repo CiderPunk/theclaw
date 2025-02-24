@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::{prelude::*, render::{extract_component::ComponentUniforms, render_resource::{AsBindGroup, ShaderRef}}};
+use bevy::{prelude::*, render:: render_resource::{AsBindGroup, ShaderRef}};
 use rand::Rng;
 
 use crate::{movement::Velocity, scheduling::GameSchedule};
@@ -84,7 +84,7 @@ fn spawn_splosion(mut commands:Commands, mut ev_splosion_event: EventReader<Splo
 
 
 fn update_splosion(mut commands:Commands, mut query:Query<(Entity, &mut Splosion, &mut MeshMaterial3d<SplosionMaterial>)>, time:Res<Time>){
-  for (entity, mut splosion, mut material) in &mut query {
+  for (entity, mut splosion,  _material) in &mut query {
     splosion.timer.tick(time.delta());
     if splosion.timer.just_finished(){
       commands.entity(entity).despawn_recursive();

@@ -73,7 +73,7 @@ fn shoot_captured(
       ev_shoot_event_writer.send(ShootEvent::new(
         true,
         transform.translation()+(transform.left()*3.0),
-         (transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED),
+        transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED,
       ));
     }
   }
