@@ -3,7 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::Velocity, scheduling::GameSchedule, ship::Captured, splosion::SplosionEvent
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, splosion::SplosionEvent
 };
 
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
@@ -26,7 +26,7 @@ pub struct SidewinderPlugin;
 impl Plugin for SidewinderPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(Update, (spawn_sidewinder, spin_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, (spawn_sidewinder, shoot, shoot_captured).in_set(GameSchedule::EntityUpdates))
       .add_systems(Update, check_dead.in_set(GameSchedule::PreDespawnEntities));
   }
 }
@@ -49,14 +49,6 @@ struct Sidewinder {
   shoot_timer: Timer,
 }
 
-fn spin_sidewinder(
-  mut query: Query<&mut Transform, (With<Sidewinder>, Without<Hooked>, Without<Captured>)>,
-  time: Res<Time>,
-) {
-  for mut transform in query.iter_mut() {
-    transform.rotate_local_x(SIDEWINDER_SPIN_SPEED * time.delta_secs());
-  }
-}
 
 fn shoot_captured(
   mut query: Query<(&mut Sidewinder, &GlobalTransform), With<Captured>>,
@@ -105,7 +97,7 @@ fn check_dead(query:Query<(&Health, &GlobalTransform, &Velocity), With<Sidewinde
     if health.0 <= 0.{
 
       info!("dead");
-      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 2.0,velocity.0));
+      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
     }
   }
 }
@@ -144,5 +136,6 @@ fn spawn_sidewinder(
       Quat::from_rotation_z(SIDEWINDER_HOOK_ROTATION),
     ),
     Health(25.0),
+    Roller{ roll_speed:SIDEWINDER_SPIN_SPEED },
   ));
 }

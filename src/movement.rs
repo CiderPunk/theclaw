@@ -23,7 +23,23 @@ impl Plugin for MovementPlugin {
       (update_velocity, update_position)
         .chain()
         .in_set(GameSchedule::EntityUpdates),
-    );
+    )
+    .add_systems(Update, update_roll);
+  }
+}
+
+#[derive(Component)]
+pub struct Roller{
+  pub roll_speed:f32,
+}
+
+
+fn update_roll(
+  mut query: Query<(&mut Transform, &Roller)>,
+  time: Res<Time>,
+) {
+  for (mut transform, roller) in query.iter_mut() {
+    transform.rotate_local_x(roller.roll_speed * time.delta_secs());
   }
 }
 

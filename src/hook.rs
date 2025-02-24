@@ -4,7 +4,7 @@ use bevy::{prelude::*, time::Stopwatch};
 
 use crate::{
   collision_detection::{Collider, CollisionEvent, Player},
-  movement::{Acceleration, Velocity},
+  movement::{Acceleration, Roller, Velocity},
   scheduling::GameSchedule,
 };
 
@@ -178,6 +178,7 @@ fn apply_collisions(
     commands.entity(collided)
     .remove::<Acceleration>()
     .remove::<Velocity>()
+    .remove::<Roller>()
     .insert(Hooked {
       time: Stopwatch::new(),
       initial_position: transform.translation,
