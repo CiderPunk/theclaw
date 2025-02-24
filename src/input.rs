@@ -23,7 +23,7 @@ impl Plugin for GameInputPlugin {
       .add_systems(Startup, init_input_resources)
       .add_systems(
         Update,
-        (read_keys, read_mouse, read_touch, read_gamepads).in_set(GameSchedule::UserInput),
+        (read_keys, read_mouse, read_touch, read_gamepads).chain().in_set(GameSchedule::UserInput),
       );
   }
 }

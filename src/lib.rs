@@ -13,6 +13,7 @@ mod scheduling;
 mod ship;
 mod sidewinder;
 mod state;
+mod splosion;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -30,6 +31,7 @@ use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
+use splosion::SplosionPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
 
 
@@ -80,6 +82,7 @@ pub fn run_game(){
       GameUiPlugin,
       HealthPlugin,
       HookPlugin,
+      SplosionPlugin,
     ))
     .add_plugins((GameInputPlugin,))
     .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))

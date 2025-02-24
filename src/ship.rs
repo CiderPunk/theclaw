@@ -38,8 +38,7 @@ impl Plugin for ShipPlugin {
           .chain()
           .in_set(GameSchedule::UserInput),
       )
-      .add_systems(Update, bounds_check.in_set(GameSchedule::BoundsCheck))
-      .add_systems(Update, retrieve_hook.in_set(GameSchedule::EntityUpdates))
+      .add_systems(Update, (bounds_check, retrieve_hook).in_set(GameSchedule::EntityUpdates))
       .add_systems(Update, remove_dead_captive.in_set(GameSchedule::PreDespawnEntities));
   }
 }

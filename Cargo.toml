@@ -8,6 +8,7 @@ description = "The Claw 2 - electric boogaloo"
 [dependencies]
 bevy =  "0.15.2"
 rand = "0.8.5"
+bevy_mod_billboard = { git = "https://github.com/voximity/bevy_mod_billboard.git"}
 
 [lib]
 name = "claw2_lib"
@@ -31,3 +32,8 @@ opt-level = 1
 opt-level = 3
 
 
+
+
+[features]
+# Enable support for WebGPU in Wasm. When enabled, this feature will override the `webgl2` feature and you won't be able to run Wasm builds with WebGL2, only with WebGPU.
+#webgpu = ["bevy_internal/webgpu"]
