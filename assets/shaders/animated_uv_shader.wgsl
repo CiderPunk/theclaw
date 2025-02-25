@@ -6,6 +6,10 @@
 @group(2) @binding(1) var atlas_texture: texture_2d<f32>;
 @group(2) @binding(2) var atlas_sampler: sampler;
 
+@group(2) @binding(3) var<uniform> padding1: f32;
+@group(2) @binding(4) var<uniform> padding2: f32;
+@group(2) @binding(5) var<uniform> padding3: f32;
+
 @fragment
 fn fragment(mesh: VertexOutput) -> @location(0) vec4<f32> {
 
