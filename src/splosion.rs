@@ -128,6 +128,14 @@ pub struct SplosionMaterial{
   #[sampler(2)]
   texture_atlas: Option<Handle<Image>>,
   alpha_mode: AlphaMode,
+
+  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
+  _wasm_padding: f32,
+  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
+  _wasm_padding: f32,
+  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
+  _wasm_padding: f32,
+
 }
 
 impl Material for SplosionMaterial{
