@@ -24,7 +24,6 @@ use camera::CameraPlugin;
 use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
 use game_ui::GameUiPlugin;
-use health::HealthPlugin;
 use hook::HookPlugin;
 
 use input::GameInputPlugin;
@@ -57,7 +56,7 @@ pub fn run_game(){
             title: APP_NAME.into(),
             name: Some(APP_NAME.into()),
             fit_canvas_to_parent: true,
-            visible: false,
+            visible: true,
             ..default()
           }),
           ..default()
@@ -81,7 +80,7 @@ pub fn run_game(){
       SidewinderPlugin,
       BoundsCheckPlugin,
       GameUiPlugin,
-      HealthPlugin,
+  
       HookPlugin,
       SplosionPlugin,
     ))
