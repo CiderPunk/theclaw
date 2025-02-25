@@ -120,22 +120,19 @@ fn update_splosion(mut commands:Commands, mut query:Query<(Entity, &mut Splosion
   }
 }
 
-#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone, Default)]
 pub struct SplosionMaterial{
-  #[uniform(0)]
-  pub frame_offset: f32,
-  #[texture(1)]
-  #[sampler(2)]
+  #[texture(0)]
+  #[sampler(1)]
   texture_atlas: Option<Handle<Image>>,
+  #[uniform(2)]
+  pub frame_offset: f32,
+
+  #[cfg(feature = "webgl2")]
+  #[uniform(3)]
+  _webgl2_padding: Vec3,
+
   alpha_mode: AlphaMode,
-
-  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
-  _wasm_padding: f32,
-  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
-  _wasm_padding: f32,
-  #[cfg(all(feature = "webgl", target_arch = "wasm32", not(feature = "webgpu")))]
-  _wasm_padding: f32,
-
 }
 
 impl Material for SplosionMaterial{
