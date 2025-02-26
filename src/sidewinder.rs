@@ -97,6 +97,7 @@ fn check_dead(mut commands:Commands, query:Query<(Entity, &Health, &GlobalTransf
     if health.0 <= 0.{
       info!("dead");
       ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
+      
       // commands.entity(entity).
       commands.entity(entity).despawn_recursive();
     }

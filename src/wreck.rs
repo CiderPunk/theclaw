@@ -4,8 +4,20 @@ pub struct WreckPlugin;
 
 impl Plugin for WreckPlugin{
   fn build(&self, app: &mut App) {
-    app.add_systems(Startup, init_wreck);
+    app
+      .add_systems(Startup, init_wreck)
+      .add_observer(on_wrecked)
+      .add_event::<Wrecked>();
   }
+}
+
+
+#[derive(Event)]
+struct Wrecked;
+
+fn on_wrecked(trigger: Trigger<Wrecked> ){
+
+
 }
 
 
@@ -25,6 +37,8 @@ fn init_wreck(
   });
   commands.insert_resource(WreckMaterial(wreck_material));
 }
+
+
 
 
 #[derive(Component)]
