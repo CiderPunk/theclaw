@@ -1,6 +1,6 @@
 use std::{array, f32::consts::PI};
 
-use bevy::{prelude::*, render:: render_resource::{AsBindGroup, ShaderRef}};
+use bevy::{prelude::*, render::render_resource::{AsBindGroup, ShaderRef, ShaderType}};
 use rand::Rng;
 
 use crate::{movement::Velocity, scheduling::GameSchedule};
@@ -68,9 +68,13 @@ fn init_splosion(
   //becomes array of sequential frame starting materials
   let frame_materials = frame_indexes.map(|i| {
     materials.add(SplosionMaterial {
-      frame_offset: i as f32,
       texture_atlas: Some(splosion_texture.clone()),
-      alpha_mode: AlphaMode::Blend,
+      alpha_mode: AlphaMode::Blend, 
+      settings: SplosionSettings{ 
+        frame_offset: i as f32,
+        frame_rate: SPLOSION_ANIMATION_FPS,
+        ..default()
+      },
     })
   });
   //store array as a resource
@@ -120,17 +124,23 @@ fn update_splosion(mut commands:Commands, mut query:Query<(Entity, &mut Splosion
   }
 }
 
-#[derive(Asset, TypePath, AsBindGroup, Debug, Clone, Default)]
-pub struct SplosionMaterial{
-  #[texture(0)]
-  #[sampler(1)]
-  texture_atlas: Option<Handle<Image>>,
-  #[uniform(2)]
-  pub frame_offset: f32,
+#[derive(Default, Clone, Copy,AsBindGroup, Debug, ShaderType)]
+pub struct SplosionSettings{
+  frame_offset: f32,
+  frame_rate: f32,
+  _webgl2_padding: Vec2,
 
-  #[cfg(feature = "webgl2")]
-  #[uniform(3)]
-  _webgl2_padding: Vec3,
+}
+
+
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct SplosionMaterial{
+  #[uniform(0)]
+  settings:SplosionSettings,
+  #[texture(1)]
+  #[sampler(2)]
+  texture_atlas: Option<Handle<Image>>,
 
   alpha_mode: AlphaMode,
 }
