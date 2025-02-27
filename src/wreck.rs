@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::scheduling::GameSchedule;
+use crate::{movement::{Acceleration, Roller, Velocity}, scheduling::GameSchedule};
 
 pub struct WreckPlugin;
 
@@ -17,13 +17,17 @@ impl Plugin for WreckPlugin{
 
 #[derive(Event)]
 pub struct WreckedEvent{
-  entity:Entity,
+  scene:Handle<Scene>,
+  translation:Vec3,
+  quat:Quat,
+  velocity:Vec3,
+  roll_speed:f32,
   time_to_live:f32,
 }
 
 impl WreckedEvent{
-  pub fn new(entity:Entity, time_to_live: f32) -> Self {
-    Self { entity, time_to_live }
+  pub fn new(scene:Handle<Scene>, translation:Vec3, quat:Quat, velocity:Vec3, roll_speed:f32, time_to_live: f32) -> Self {
+    Self { scene, translation, quat, velocity, roll_speed, time_to_live }
   }
 }
 
@@ -42,21 +46,22 @@ fn wreck_check(
   children: Query<&Children>,
   wreck_material:Res<WreckMaterial>,
 ){
-  for &WreckedEvent{ entity, time_to_live } in ev_wrecked_reader.read(){
-    commands
-      .entity(entity)
-      .insert_if_new(
-        Wreck{ 
-          time_to_live:Timer::from_seconds(time_to_live, TimerMode::Once)
-        });
-
-
-    for descendants in children.iter_descendants(entity) {
+  for WreckedEvent{ scene, translation, quat, velocity, roll_speed, time_to_live } in ev_wrecked_reader.read(){
+    let entity = commands.spawn((
+      SceneRoot(scene.clone()),
+      Transform::from_translation(*translation).with_rotation(*quat),
+      Velocity(*velocity), 
+      Wreck{ 
+        time_to_live:Timer::from_seconds(*time_to_live, TimerMode::Once)
+      },
+      Roller{ roll_speed: *roll_speed },
+    ));
+    
+    for descendants in children.iter_descendants(entity.id()) {
       commands
         .entity(descendants)
         .insert(MeshMaterial3d(wreck_material.0.clone()));
     }
-
   }
 }
 

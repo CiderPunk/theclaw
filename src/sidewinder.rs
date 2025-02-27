@@ -93,39 +93,21 @@ fn shoot(
 }
 
 fn check_dead(
-  query:Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<Sidewinder>, Without<Wreck>)>, 
+  mut commands:Commands,
+  query:Query<(Entity, &Health, &GlobalTransform, &Velocity, &Roller), (With<Sidewinder>, Without<Wreck>)>, 
   mut ev_splosion_writer:EventWriter<SplosionEvent>,
-  mut ev_wreck_writer:EventWriter<WreckedEvent>
+  mut ev_wreck_writer:EventWriter<WreckedEvent>,
+  scene_assets: Res<SceneAssets>,
 ){
-  for(entity, health, transform, velocity) in query.iter(){
+  for(entity, health, transform, velocity, roller) in query.iter(){
     if health.0 <= 0.{
       info!("dead");
       ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
-
-      ev_wreck_writer.send(WreckedEvent::new(entity, 1.0));
-      
+      ev_wreck_writer.send(WreckedEvent::new(scene_assets.sidewinder.clone(), transform.translation(), transform.rotation(),  velocity.0, roller.roll_speed, 3.0));
+      commands.entity(entity).despawn_recursive();
     }
   }
 }
-
-/*
-fn check_dead(
-  query:Query<(Entity, &Health, &GlobalTransform, &Velocity, &SceneRoot, &Roller), (With<Sidewinder>, Without<Wreck>)>, 
-  mut ev_splosion_writer:EventWriter<SplosionEvent>,
-  mut ev_wreck_writer:EventWriter<WreckedEvent>
-){
-  for(entity, health, transform, velocity, scene_root, roller) in query.iter(){
-    if health.0 <= 0.{
-      info!("dead");
-      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
-
-      ev_wreck_writer.send(WreckedEvent::new(scene_root, transform, velocity, roller.roll_speed, 1.0));
-      
-    }
-  }
-}
-
-*/
 
 fn spawn_sidewinder(
   mut commands: Commands,
