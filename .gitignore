@@ -8,3 +8,4 @@
 app/release/app-release.aab
 app/src/main/jniLibs
 /models/cache_*
+assets/textures/*.png~

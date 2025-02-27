@@ -3,7 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, splosion::SplosionEvent
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, health::Health, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, splosion::SplosionEvent, wreck::{Wreck, WreckedEvent}
 };
 
 const SIDEWINDER_SPANW_TIME_SECONDS: f32 = 2.;
@@ -92,18 +92,40 @@ fn shoot(
   }
 }
 
-fn check_dead(mut commands:Commands, query:Query<(Entity, &Health, &GlobalTransform, &Velocity), With<Sidewinder>>, mut ev_splosion_writer:EventWriter<SplosionEvent>){
+fn check_dead(
+  query:Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<Sidewinder>, Without<Wreck>)>, 
+  mut ev_splosion_writer:EventWriter<SplosionEvent>,
+  mut ev_wreck_writer:EventWriter<WreckedEvent>
+){
   for(entity, health, transform, velocity) in query.iter(){
     if health.0 <= 0.{
       info!("dead");
       ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
+
+      ev_wreck_writer.send(WreckedEvent::new(entity, 1.0));
       
-      // commands.entity(entity).
-      commands.entity(entity).despawn_recursive();
     }
   }
 }
 
+/*
+fn check_dead(
+  query:Query<(Entity, &Health, &GlobalTransform, &Velocity, &SceneRoot, &Roller), (With<Sidewinder>, Without<Wreck>)>, 
+  mut ev_splosion_writer:EventWriter<SplosionEvent>,
+  mut ev_wreck_writer:EventWriter<WreckedEvent>
+){
+  for(entity, health, transform, velocity, scene_root, roller) in query.iter(){
+    if health.0 <= 0.{
+      info!("dead");
+      ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
+
+      ev_wreck_writer.send(WreckedEvent::new(scene_root, transform, velocity, roller.roll_speed, 1.0));
+      
+    }
+  }
+}
+
+*/
 
 fn spawn_sidewinder(
   mut commands: Commands,
