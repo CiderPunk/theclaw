@@ -1,4 +1,4 @@
-use bevy::{log::tracing_subscriber::filter::targets, prelude::*};
+use bevy::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
@@ -38,17 +38,21 @@ impl Plugin for ShipPlugin {
           .chain()
           .in_set(GameSchedule::UserInput),
       )
-      .add_systems(Update, (bounds_check, retrieve_hook).in_set(GameSchedule::EntityUpdates))
-      .add_systems(Update, remove_dead_captive.in_set(GameSchedule::PreDespawnEntities));
+      .add_systems(
+        Update,
+        (bounds_check, retrieve_hook).in_set(GameSchedule::EntityUpdates),
+      )
+      .add_systems(
+        Update,
+        remove_dead_captive.in_set(GameSchedule::PreDespawnEntities),
+      );
   }
 }
 
 fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
   commands
     .spawn((
-      PlayerShip {
-        ..default()
-      },
+      PlayerShip { ..default() },
       SceneRoot(scene_assets.ship.clone()),
       Transform::from_translation(STARTING_TRANSLATION),
       Acceleration {
@@ -75,19 +79,17 @@ pub struct PlayerShip {
   target_pitch: f32,
   pitch: f32,
   //hook_out: bool,
-  hook:Option<Entity>,
-  captive:Option<Entity>,
+  hook: Option<Entity>,
+  captive: Option<Entity>,
 }
 
 #[derive(Component)]
 struct DisplayHook;
 
-
 #[derive(Component)]
-pub struct Captured{
-  pub captor:Entity
+pub struct Captured {
+  pub captor: Entity,
 }
-
 
 fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
   let Ok((mut ship, mut transform)) = query.get_single_mut() else {
@@ -95,7 +97,7 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
   };
   let diff = ship.target_pitch - ship.pitch;
   let max_turn = SHIP_PITCH_RATE * time.delta_secs();
-  if max_turn > diff.abs(){
+  if max_turn > diff.abs() {
     ship.pitch = ship.target_pitch;
   } else {
     ship.pitch += diff.signum() * max_turn;
@@ -104,11 +106,11 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
 }
 
 fn fire_controls(
-  mut commands:Commands,
+  mut commands: Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
   mut ev_trigger_event: EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
-  mut hook_query:Query<&mut Hook>,
+  mut hook_query: Query<&mut Hook>,
   scene_assets: Res<SceneAssets>,
 ) {
   let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
@@ -124,27 +126,36 @@ fn fire_controls(
   if !shoot {
     return;
   }
-  match ship.hook{
-    Some(hook) =>{
-      let Ok(mut hook_state) = hook_query.get_mut(hook)
-      else { return; };
+  match ship.hook {
+    Some(hook) => {
+      let Ok(mut hook_state) = hook_query.get_mut(hook) else {
+        return;
+      };
       hook_state.returning = true;
     }
-    None =>{
-      match ship.captive{
+    None => {
+      match ship.captive {
         Some(captive) => {
           //eat captive?
           commands.entity(captive).despawn_recursive();
           ship.captive = None;
         }
-        None=>{
-          let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut() else {
+        None => {
+          let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut()
+          else {
             return;
           };
           *display_hook_visible = Visibility::Hidden;
-          ship.hook = Some(commands.spawn(
-            hook_builder(entity, transform.translation(), velocity.0, scene_assets.hook.clone())
-          ).id());
+          ship.hook = Some(
+            commands
+              .spawn(hook_builder(
+                entity,
+                transform.translation(),
+                velocity.0,
+                scene_assets.hook.clone(),
+              ))
+              .id(),
+          );
         }
       }
     }
@@ -189,7 +200,7 @@ fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
 }
 
 fn retrieve_hook(
-  mut commands:Commands,
+  mut commands: Commands,
   mut ev_hook_returned: EventReader<HookReturnedEvent>,
   mut display_hook_query: Query<&mut Visibility, With<DisplayHook>>,
   mut ship_query: Query<(&mut PlayerShip, Entity)>,
@@ -207,9 +218,9 @@ fn retrieve_hook(
 
     info!("ship hook returned, captive: {:?}", target);
 
-    if target.is_some(){ 
-      let target_entity = target.unwrap();       
-      let Ok((mut transform, mut hookable)) = target_query.get_mut(target_entity) else{
+    if target.is_some() {
+      let target_entity = target.unwrap();
+      let Ok((mut transform, mut hookable)) = target_query.get_mut(target_entity) else {
         return;
       };
 
@@ -217,24 +228,30 @@ fn retrieve_hook(
       transform.translation += CLAW_OFFSET;
       hookable.translation += CLAW_OFFSET;
       commands.entity(ship_entity).add_child(target_entity);
-      commands.entity(target_entity).insert((Captured{ captor:ship_entity }, Player));
+      commands.entity(target_entity).insert((
+        Captured {
+          captor: ship_entity,
+        },
+        Player,
+      ));
     }
   }
 }
 
-
 fn remove_dead_captive(
-  mut commands:Commands,
-  mut query:Query<(Entity, &Captured,  &Health), Without<PlayerShip>>,
-  mut ship_query:Query<&mut PlayerShip>,
-){
+  mut commands: Commands,
+  mut query: Query<(Entity, &Captured, &Health), Without<PlayerShip>>,
+  mut ship_query: Query<&mut PlayerShip>,
+) {
   let Ok((captive_entity, captured, health)) = query.get_single_mut() else {
     return;
   };
-  if health.0 <= 0.{
+  if health.0 <= 0. {
     info!("removing dead captive: {:?}", captive_entity);
-    commands.entity(captured.captor).remove_children(&[captive_entity]);
-    let Ok(mut ship) = ship_query.get_mut(captured.captor) else{
+    commands
+      .entity(captured.captor)
+      .remove_children(&[captive_entity]);
+    let Ok(mut ship) = ship_query.get_mut(captured.captor) else {
       return;
     };
     ship.captive = None;

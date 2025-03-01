@@ -3,6 +3,7 @@ mod bounds_check;
 mod bullet;
 mod camera;
 mod collision_detection;
+mod constants;
 mod enemy;
 mod game_ui;
 mod health;
@@ -12,10 +13,9 @@ mod movement;
 mod scheduling;
 mod ship;
 mod sidewinder;
-mod state;
 mod splosion;
+mod state;
 mod wreck;
-mod constants;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -36,15 +36,14 @@ use splosion::SplosionPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
 use wreck::WreckPlugin;
 
-
-const APP_NAME:&str = "The Claw 2";
+const APP_NAME: &str = "The Claw 2";
 
 #[bevy_main]
 fn main() {
   run_game();
 }
 
-pub fn run_game(){
+pub fn run_game() {
   App::new()
     .insert_resource(ClearColor(Color::srgb(0.1, 0.0, 0.15)))
     .insert_resource(AmbientLight {
@@ -53,8 +52,8 @@ pub fn run_game(){
     })
     .add_plugins(
       DefaultPlugins
-        .set( WindowPlugin{
-          primary_window: Some(Window{
+        .set(WindowPlugin {
+          primary_window: Some(Window {
             title: APP_NAME.into(),
             name: Some(APP_NAME.into()),
             fit_canvas_to_parent: true,
@@ -64,10 +63,9 @@ pub fn run_game(){
           ..default()
         })
         .set(AssetPlugin {
-            meta_check: AssetMetaCheck::Never,
-            ..default()
-        }
-      )
+          meta_check: AssetMetaCheck::Never,
+          ..default()
+        }),
     )
     .add_plugins((
       StatePlugin,
@@ -88,7 +86,6 @@ pub fn run_game(){
     ))
     .add_plugins((GameInputPlugin,))
     .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
-    
     .add_systems(PreUpdate, check_window)
     .run();
 }
@@ -96,16 +93,15 @@ pub fn run_game(){
 fn check_window(
   mut ev_windows_close_reader: EventReader<WindowCloseRequested>,
   mut ev_game_state_writer: EventWriter<GameStateEvent>,
-){
+) {
   for _ in ev_windows_close_reader.read() {
     ev_game_state_writer.send(GameStateEvent::new(GameState::Shutdown));
   }
 }
 
-
-fn make_visible(mut window:Single<&mut Window>, frames:Res<FrameCount>){
+fn make_visible(mut window: Single<&mut Window>, frames: Res<FrameCount>) {
   info!("frame {:?}", frames.0);
-  if frames.0 == 1{
+  if frames.0 == 1 {
     window.visible = true;
   }
 }

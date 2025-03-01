@@ -23,7 +23,9 @@ impl Plugin for GameInputPlugin {
       .add_systems(Startup, init_input_resources)
       .add_systems(
         Update,
-        (read_keys, read_mouse, read_touch, read_gamepads).chain().in_set(GameSchedule::UserInput),
+        (read_keys, read_mouse, read_touch, read_gamepads)
+          .chain()
+          .in_set(GameSchedule::UserInput),
       );
   }
 }
@@ -64,7 +66,10 @@ struct TouchResource {
 
 fn init_input_resources(mut commands: Commands) {
   commands.insert_resource(MouseResource { last: Vec2::ZERO });
-  commands.insert_resource(TouchResource { last: Vec2::ZERO, move_finger:None, });
+  commands.insert_resource(TouchResource {
+    last: Vec2::ZERO,
+    move_finger: None,
+  });
 }
 
 fn read_gamepads(
@@ -99,15 +104,13 @@ fn read_touch(
   mut ev_trigger_event: EventWriter<InputTriggerEvent>,
   mut touch_tracker: ResMut<TouchResource>,
 ) {
-
   for touch in touches.iter_just_pressed() {
     //fisrt touch down is our move finger
     //info!("touch down: {:?}", touch.id());
-    if touch_tracker.move_finger.is_none(){
+    if touch_tracker.move_finger.is_none() {
       touch_tracker.move_finger = Some(touch.id());
       touch_tracker.last = touch.position();
-    }
-    else{
+    } else {
       //second is our shoot action
       ev_trigger_event.send(InputTriggerEvent::new(
         InputEventAction::Shoot,
@@ -116,14 +119,12 @@ fn read_touch(
     }
   }
 
-
   for touch in touches.iter_just_released() {
     //release movement
     //info!("touch up: {:?}", touch.id());
-    if touch_tracker.move_finger == Some(touch.id()){
+    if touch_tracker.move_finger == Some(touch.id()) {
       touch_tracker.move_finger = None;
-    }
-    else{
+    } else {
       //or stop firing
       ev_trigger_event.send(InputTriggerEvent::new(
         InputEventAction::Shoot,
@@ -131,8 +132,8 @@ fn read_touch(
       ));
     }
   }
-  match touch_tracker.move_finger{
-    Some(finger)=>{
+  match touch_tracker.move_finger {
+    Some(finger) => {
       let mut found = false;
       for touch in touches.iter() {
         //move finger movement tracking
@@ -145,11 +146,11 @@ fn read_touch(
           touch_tracker.last = touch.position();
         }
       }
-      if !found{
+      if !found {
         touch_tracker.move_finger = None;
       }
-    },
-    None=>(),
+    }
+    None => (),
   }
 }
 

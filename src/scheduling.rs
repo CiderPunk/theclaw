@@ -1,4 +1,7 @@
-use bevy::{ecs::schedule::{LogLevel, ScheduleBuildSettings}, prelude::*};
+use bevy::{
+  ecs::schedule::{LogLevel, ScheduleBuildSettings},
+  prelude::*,
+};
 
 use crate::state::GameState;
 
@@ -29,16 +32,16 @@ impl Plugin for SchedulingPlugin {
       )
       .configure_sets(
         PostUpdate,
-        GameSchedule::CollisionDetection.after(TransformSystem::TransformPropagate).run_if(in_state(GameState::Playing)),
+        GameSchedule::CollisionDetection
+          .after(TransformSystem::TransformPropagate)
+          .run_if(in_state(GameState::Playing)),
       );
 
-     app.edit_schedule(Update, |schedule| {
-
+    app.edit_schedule(Update, |schedule| {
       schedule.set_build_settings(ScheduleBuildSettings {
         ambiguity_detection: LogLevel::Warn,
         ..default()
       });
-
-    }); 
+    });
   }
 }
