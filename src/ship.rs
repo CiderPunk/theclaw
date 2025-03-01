@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{log::tracing_subscriber::filter::targets, prelude::*};
 use std::f32::consts::PI;
 
 use crate::{
@@ -206,31 +206,29 @@ fn retrieve_hook(
     *visible = Visibility::Visible;
 
     info!("ship hook returned, captive: {:?}", target);
-    match target{
-      Some(target_entity)=>{        
-        let Ok((mut transform, mut hookable)) = target_query.get_mut(target_entity) else{
-          return;
-        };
 
-        ship.captive = Some(target_entity);
-        transform.translation += CLAW_OFFSET;
-        hookable.translation += CLAW_OFFSET;
-        commands.entity(ship_entity).add_child(target_entity);
-        commands.entity(target_entity).insert((Captured{ captor:ship_entity }, Player));
-      },
-      None=>(),
+    if target.is_some(){ 
+      let target_entity = target.unwrap();       
+      let Ok((mut transform, mut hookable)) = target_query.get_mut(target_entity) else{
+        return;
+      };
+
+      ship.captive = Some(target_entity);
+      transform.translation += CLAW_OFFSET;
+      hookable.translation += CLAW_OFFSET;
+      commands.entity(ship_entity).add_child(target_entity);
+      commands.entity(target_entity).insert((Captured{ captor:ship_entity }, Player));
     }
-    //trap target or something
   }
 }
 
 
 fn remove_dead_captive(
   mut commands:Commands,
-  query:Query<(Entity, &Captured, &Health)>,
+  mut query:Query<(Entity, &Captured,  &Health), Without<PlayerShip>>,
   mut ship_query:Query<&mut PlayerShip>,
 ){
-  let Ok((captive_entity, captured, health)) = query.get_single() else {
+  let Ok((captive_entity, captured, health)) = query.get_single_mut() else {
     return;
   };
   if health.0 <= 0.{

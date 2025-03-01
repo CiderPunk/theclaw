@@ -15,6 +15,7 @@ mod sidewinder;
 mod state;
 mod splosion;
 mod wreck;
+mod constants;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -33,6 +34,7 @@ use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
 use splosion::SplosionPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
+use wreck::WreckPlugin;
 
 
 const APP_NAME:&str = "The Claw 2";
@@ -80,9 +82,9 @@ pub fn run_game(){
       SidewinderPlugin,
       BoundsCheckPlugin,
       GameUiPlugin,
-  
       HookPlugin,
       SplosionPlugin,
+      WreckPlugin,
     ))
     .add_plugins((GameInputPlugin,))
     .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
