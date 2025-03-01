@@ -15,6 +15,7 @@ mod sidewinder;
 mod state;
 mod splosion;
 mod wreck;
+mod constants;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};

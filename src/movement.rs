@@ -16,6 +16,13 @@ pub struct Acceleration {
   pub max_speed: f32,
 }
 
+impl Acceleration{
+  pub fn new(acceleration:Vec3, damping:f32, max_speed:f32)->Self{
+    Self{acceleration, damping, max_speed}
+  }
+}
+
+
 impl Plugin for MovementPlugin {
   fn build(&self, app: &mut App) {
     app.add_systems(
