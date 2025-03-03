@@ -16,35 +16,35 @@ pub struct Acceleration {
   pub max_speed: f32,
 }
 
-impl Acceleration{
-  pub fn new(acceleration:Vec3, damping:f32, max_speed:f32)->Self{
-    Self{acceleration, damping, max_speed}
+impl Acceleration {
+  pub fn new(acceleration: Vec3, damping: f32, max_speed: f32) -> Self {
+    Self {
+      acceleration,
+      damping,
+      max_speed,
+    }
   }
 }
 
-
 impl Plugin for MovementPlugin {
   fn build(&self, app: &mut App) {
-    app.add_systems(
-      Update,
-      (update_velocity, update_position)
-        .chain()
-        .in_set(GameSchedule::EntityUpdates),
-    )
-    .add_systems(Update, update_roll);
+    app
+      .add_systems(
+        Update,
+        (update_velocity, update_position)
+          .chain()
+          .in_set(GameSchedule::EntityUpdates),
+      )
+      .add_systems(Update, update_roll.in_set(GameSchedule::EntityUpdates));
   }
 }
 
 #[derive(Component)]
-pub struct Roller{
-  pub roll_speed:f32,
+pub struct Roller {
+  pub roll_speed: f32,
 }
 
-
-fn update_roll(
-  mut query: Query<(&mut Transform, &Roller)>,
-  time: Res<Time>,
-) {
+fn update_roll(mut query: Query<(&mut Transform, &Roller)>, time: Res<Time>) {
   for (mut transform, roller) in query.iter_mut() {
     transform.rotate_local_x(roller.roll_speed * time.delta_secs());
   }

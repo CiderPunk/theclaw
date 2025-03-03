@@ -25,10 +25,7 @@ impl Plugin for HookPlugin {
       .add_systems(Update, retrieve_hook.in_set(GameSchedule::DespawnEntities))
       .add_systems(
         Update,
-        (
-          apply_collisions,
-          center_hooked,
-        ).in_set(GameSchedule::EntityUpdates),
+        (apply_collisions, center_hooked).in_set(GameSchedule::EntityUpdates),
       )
       .add_event::<HookReturnedEvent>();
   }
@@ -55,7 +52,6 @@ pub struct Hooked {
   initial_position: Vec3,
   initial_rotation: Quat,
 }
-
 
 #[derive(Component)]
 #[require(Acceleration, Velocity, Player)]
@@ -86,8 +82,19 @@ impl HookReturnedEvent {
 }
 
 pub fn hook_builder(
-  owner:Entity, start:Vec3, launcher_veloctiy:Vec3, scene:Handle<Scene>
-)->(Hook, Player, SceneRoot, Velocity, Acceleration, Transform, Collider){
+  owner: Entity,
+  start: Vec3,
+  launcher_veloctiy: Vec3,
+  scene: Handle<Scene>,
+) -> (
+  Hook,
+  Player,
+  SceneRoot,
+  Velocity,
+  Acceleration,
+  Transform,
+  Collider,
+) {
   (
     Hook::new(owner),
     Player,
@@ -104,11 +111,17 @@ pub fn hook_builder(
 }
 
 fn update_hook(
-  mut query: Query<(&mut Hook, &GlobalTransform, &mut Transform, &mut Acceleration)>,
+  mut query: Query<(
+    &mut Hook,
+    &GlobalTransform,
+    &mut Transform,
+    &mut Acceleration,
+  )>,
   owner_query: Query<&GlobalTransform>,
   mut ev_hook_returned: EventWriter<HookReturnedEvent>,
 ) {
-  let Ok((mut hook, hook_transform, mut transform, mut acceleration)) = query.get_single_mut() else {
+  let Ok((mut hook, hook_transform, mut transform, mut acceleration)) = query.get_single_mut()
+  else {
     return;
   };
 
@@ -145,11 +158,11 @@ fn retrieve_hook(
     };
 
     info!("hook returned, captive: {:?}", target);
-    match target{
-      Some(target)=>{ 
+    match target {
+      Some(target) => {
         commands.entity(entity).remove_children(&[target]);
-      },
-      None=>(),
+      }
+      None => (),
     }
     commands.entity(entity).despawn_recursive();
   }
@@ -159,14 +172,16 @@ fn apply_collisions(
   mut commands: Commands,
   mut ev_collision: EventReader<CollisionEvent>,
   mut hook_query: Query<(&mut Hook, &GlobalTransform)>,
-  mut target_query: Query<(&mut Transform, &mut Velocity, &GlobalTransform),(With<Hookable>, Without<Hook>)>,
+  mut target_query: Query<
+    (&mut Transform, &mut Velocity, &GlobalTransform),
+    (With<Hookable>, Without<Hook>),
+  >,
 ) {
   for &CollisionEvent { entity, collided } in ev_collision.read() {
     let Ok((mut hook, hook_transform)) = hook_query.get_mut(entity) else {
       continue;
     };
-    let Ok((mut transform, mut target_velocity, target_transform)) =
-      target_query.get_mut(collided)
+    let Ok((mut transform, mut target_velocity, target_transform)) = target_query.get_mut(collided)
     else {
       continue;
     };
@@ -174,13 +189,13 @@ fn apply_collisions(
     //target_acceleration.acceleration = Vec3::ZERO;
     hook.returning = true;
     hook.target = Some(collided);
-    commands.entity(entity).remove::<Collider>().add_child(collided);
+    commands
+      .entity(entity)
+      .remove::<Collider>()
+      .add_child(collided);
     transform.translation = target_transform.translation() - hook_transform.translation();
 
-    commands.entity(collided)
-
-    .remove::<Roller>()
-    .insert(Hooked {
+    commands.entity(collided).remove::<Roller>().insert(Hooked {
       time: Stopwatch::new(),
       initial_position: transform.translation,
       initial_rotation: transform.rotation,
@@ -188,17 +203,13 @@ fn apply_collisions(
   }
 }
 
-fn center_hooked(
-  mut query: Query<(&mut Hooked, &mut Transform, &Hookable)>, time: Res<Time>
-
-) {
+fn center_hooked(mut query: Query<(&mut Hooked, &mut Transform, &Hookable)>, time: Res<Time>) {
   let Ok((mut hooked, mut transform, hookable)) = query.get_single_mut() else {
     return;
   };
   hooked.time.tick(time.delta());
   let ratio = (hooked.time.elapsed_secs() * HOOK_CENTERING_SPEED).clamp(0.0, 1.0);
-  
+
   transform.translation = hooked.initial_position.lerp(hookable.translation, ratio);
   transform.rotation = hooked.initial_rotation.lerp(hookable.rotation, ratio);
-
 }

@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
-pub const CAMERA_LOCATION:Vec3 = Vec3::new(0., 80., 0.);
-
+pub const CAMERA_LOCATION: Vec3 = Vec3::new(0., 80., 0.);
 
 pub struct CameraPlugin;
 
@@ -18,8 +17,7 @@ fn spawn_camera(mut commands: Commands) {
       order: 0,
       ..default()
     },
-    Transform::from_translation(CAMERA_LOCATION)
-      .looking_at(Vec3::ZERO, Vec3::Z),
+    Transform::from_translation(CAMERA_LOCATION).looking_at(Vec3::ZERO, Vec3::Z),
   ));
 
   commands.spawn((
