@@ -107,7 +107,6 @@ fn shoot(
 fn check_dead(
   mut commands: Commands,
   query: Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<Sidewinder>, Without<Wreck>)>,
-
   mut ev_wreck_writer: EventWriter<WreckedEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
@@ -121,7 +120,7 @@ fn check_dead(
         transform.rotation(),
         velocity.0,
         SIDEWINDER_SPIN_SPEED,
-        2.0,
+        1.5,
         SIDEWINDER_BLAST_SIZE,
       ));
       commands.entity(entity).despawn_recursive();

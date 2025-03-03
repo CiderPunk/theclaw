@@ -16,6 +16,7 @@ mod sidewinder;
 mod splosion;
 mod state;
 mod wreck;
+mod game_manager;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -24,6 +25,7 @@ use bullet::BulletPlugin;
 use camera::CameraPlugin;
 use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
+use game_manager::GameManagerPlugin;
 use game_ui::GameUiPlugin;
 use hook::HookPlugin;
 
@@ -84,7 +86,9 @@ pub fn run_game() {
       SplosionPlugin,
       WreckPlugin,
     ))
-    .add_plugins((GameInputPlugin,))
+    .add_plugins((
+      GameInputPlugin,
+      GameManagerPlugin,))
     .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
     .run();

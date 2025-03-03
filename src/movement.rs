@@ -35,7 +35,7 @@ impl Plugin for MovementPlugin {
           .chain()
           .in_set(GameSchedule::EntityUpdates),
       )
-      .add_systems(Update, update_roll);
+      .add_systems(Update, update_roll.in_set(GameSchedule::EntityUpdates));
   }
 }
 

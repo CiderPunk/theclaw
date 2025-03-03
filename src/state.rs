@@ -4,7 +4,8 @@ pub struct StatePlugin;
 impl Plugin for StatePlugin {
   fn build(&self, app: &mut App) {
     app
-      .init_state::<GameState>()
+    .init_state::<GameState>()
+
       .add_systems(PreStartup, init_game_state)
       .add_systems(Update, update_game_state)
       .add_event::<GameStateEvent>();
@@ -31,6 +32,9 @@ pub enum GameState {
   // Paused,
 }
 
+
+
+
 fn init_game_state(mut next_state: ResMut<NextState<GameState>>) {
   info!("Setting initial game state");
   next_state.set(GameState::Loading);
@@ -45,3 +49,5 @@ fn update_game_state(
     next_state.set(state);
   }
 }
+
+

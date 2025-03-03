@@ -122,7 +122,7 @@ fn spawn_splosion(
     let frame =
       ((time.elapsed_secs() * SPLOSION_ANIMATION_FPS) % SPLOSION_FRAMES as f32).floor() as usize;
 
-    info!("spawning frame {:?}", frame);
+    //info!("spawning frame {:?}", frame);
     let material = materials.collection[SPLOSION_FRAMES - frame - 1].clone();
 
     let mut rng = rand::thread_rng();

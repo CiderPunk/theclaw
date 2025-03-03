@@ -2,14 +2,7 @@ use bevy::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets,
-  collision_detection::{Collider, Player},
-  health::Health,
-  hook::{hook_builder, Hook, HookReturnedEvent, Hookable},
-  input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
-  movement::{Acceleration, Velocity},
-  scheduling::GameSchedule,
-  state::GameState,
+  asset_loader::SceneAssets, collision_detection::{Collider, Player}, game_manager::PlayState, health::Health, hook::{hook_builder, Hook, HookReturnedEvent, Hookable}, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Velocity}, scheduling::GameSchedule, state::GameState, wreck::{Wreck, WreckedEvent}
 };
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0, 0.0, 0.0);
@@ -19,7 +12,7 @@ const SHIP_MAX_SPEED: f32 = 40.0;
 const SHIP_MAX_PITCH: f32 = 0.1 * PI;
 const SHIP_PITCH_RATE: f32 = 2.;
 const SHIP_COLLISION_RADIUS: f32 = 1.8;
-const SHIP_INITIAL_HEALTH: f32 = 100.0;
+const SHIP_INITIAL_HEALTH: f32 = 30.0;
 
 const CLAW_OFFSET: Vec3 = Vec3::new(0.22188, 0., -0.72352);
 const BOUNDS_X_MIN: f32 = -20.;
@@ -31,7 +24,7 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_systems(OnEnter(GameState::Playing), spawn_ship)
+      .add_systems(OnEnter(PlayState::Alive), spawn_ship)
       .add_systems(
         Update,
         (movement_controls, update_pitch, fire_controls)
@@ -40,7 +33,7 @@ impl Plugin for ShipPlugin {
       )
       .add_systems(
         Update,
-        (bounds_check, retrieve_hook).in_set(GameSchedule::EntityUpdates),
+        (bounds_check, retrieve_hook, check_dead).in_set(GameSchedule::EntityUpdates),
       )
       .add_systems(
         Update,
@@ -255,5 +248,33 @@ fn remove_dead_captive(
       return;
     };
     ship.captive = None;
+  }
+}
+
+
+
+fn check_dead(
+  mut commands: Commands,
+  query: Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<PlayerShip>, Without<Wreck>)>,
+  mut ev_wreck_writer: EventWriter<WreckedEvent>,
+  mut play_state: ResMut<NextState<PlayState>>,
+  scene_assets: Res<SceneAssets>,
+) {
+  for (entity, health, transform, velocity) in query.iter() {
+    if health.0 <= 0. {
+      info!("dead");
+      //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
+      ev_wreck_writer.send(WreckedEvent::new(
+        scene_assets.ship.clone(),
+        transform.translation(),
+        transform.rotation(),
+        velocity.0,
+        1.2,
+        3.0,
+        3.0,
+      ));
+      commands.entity(entity).despawn_recursive();
+      play_state.set(PlayState::Dead);
+    }
   }
 }
