@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-const GAME_START_LIVES:u32 = 3;
+const GAME_START_LIVES:u32 = 99;
 const GAME_RESPAWN_TIME:f32 = 4.;
 use crate::{scheduling::GameSchedule, state::GameState};
 
@@ -28,8 +28,8 @@ pub enum PlayState{
 
 #[derive(Component)]
 pub struct Game{
-  score:u64,
-  lives:u32,
+  pub score:u64,
+  pub lives:u32,
   respawn_timer:Timer,
 }
 
@@ -41,6 +41,11 @@ fn start_respawn_timer(mut game:Single<&mut Game>){
 fn respawn_player(mut commands:Commands, mut game:Single<&mut Game>,  time:Res<Time>,  mut play_state: ResMut<NextState<PlayState>>){
   game.respawn_timer.tick(time.delta());
   if game.respawn_timer.just_finished(){
+    if game.lives == 0{
+      
+      //TODO: goto end screen 
+    }
+    game.lives -= 1;
     play_state.set(PlayState::Alive);
   }
 }
