@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{bullet::Bullet, health::Health, hook::Hook, scheduling::GameSchedule};
+use crate::{bullet::Bullet, health::Health, hook::Hook, scheduling::GameSchedule, ship::Invincible};
 
 pub struct CollsionDetectionPlugin;
 
@@ -81,7 +81,7 @@ fn player_bullet_collision_detection(
 fn enemy_bullet_collision_detection(
   mut ev_bullet_collision: EventWriter<BulletCollisionEvent>,
   bullet_query: Query<(Entity, &GlobalTransform), (With<Bullet>, Without<Player>)>,
-  target_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Hook>)>,
+  target_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Hook>, Without<Invincible>)>,
 ) {
   for (target, tagret_transform, collider) in target_query.iter() {
     for (bullet, bullet_transform) in bullet_query.iter() {
@@ -97,7 +97,7 @@ fn enemy_bullet_collision_detection(
 
 fn player_collision_detection(
   mut ev_collision: EventWriter<CollisionEvent>,
-  player_query: Query<(Entity, &GlobalTransform, &Collider), With<Player>>,
+  player_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Invincible>)>,
   enemy_query: Query<(Entity, &GlobalTransform, &Collider), Without<Player>>,
 ) {
   for (player, player_transform, player_collider) in player_query.iter() {

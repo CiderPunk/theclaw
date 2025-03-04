@@ -14,6 +14,10 @@ const SHIP_PITCH_RATE: f32 = 2.;
 const SHIP_COLLISION_RADIUS: f32 = 1.8;
 const SHIP_INITIAL_HEALTH: f32 = 30.0;
 
+const SHIP_INVINCIBLE_TIME: f32 = 1.5;
+const SHIP_INVINCIBLE_FLICKER_RATE: f32 = 15.0;
+const SHIP_INVINCIBLE_FLICKER_RATIO: f32 = 3.0;
+
 const CLAW_OFFSET: Vec3 = Vec3::new(0.22188, 0., -0.72352);
 const BOUNDS_X_MIN: f32 = -20.;
 const BOUNDS_X_MAX: f32 = 50.;
@@ -27,13 +31,13 @@ impl Plugin for ShipPlugin {
       .add_systems(OnEnter(PlayState::Alive), spawn_ship)
       .add_systems(
         Update,
-        (movement_controls, update_pitch, fire_controls)
+        (movement_controls, update_pitch, fire_controls )
           .chain()
           .in_set(GameSchedule::UserInput),
       )
       .add_systems(
         Update,
-        (bounds_check, retrieve_hook, check_dead).in_set(GameSchedule::EntityUpdates),
+        (bounds_check, retrieve_hook, check_dead, invincible).in_set(GameSchedule::EntityUpdates),
       )
       .add_systems(
         Update,
@@ -58,6 +62,10 @@ fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
         radius: SHIP_COLLISION_RADIUS,
       },
       Player,
+      Invincible{
+        time:Timer::from_seconds(SHIP_INVINCIBLE_TIME, TimerMode::Once),
+      },
+
     ))
     .with_child((
       DisplayHook,
@@ -82,6 +90,30 @@ struct DisplayHook;
 #[derive(Component)]
 pub struct Captured {
   pub captor: Entity,
+}
+
+#[derive(Component)]
+pub struct Invincible{
+  time:Timer,
+}
+
+
+fn invincible(mut commands:Commands, mut query:Query<(&mut Invincible,  &mut Visibility, Entity)>, time:Res<Time>){
+  let Ok((mut invincible, mut visibilty, entity)) = query.get_single_mut() else{
+    return;
+  };
+  invincible.time.tick(time.delta());
+  if invincible.time.just_finished(){
+    commands.entity(entity).remove::<Invincible>();
+    *visibilty = Visibility::Visible;
+  }
+  else{
+    
+    *visibilty =  match  (invincible.time.elapsed_secs() * SHIP_INVINCIBLE_FLICKER_RATE % SHIP_INVINCIBLE_FLICKER_RATIO).floor()  {
+      0.0 => Visibility::Hidden,
+      _ => Visibility::Visible,
+    }
+  }
 }
 
 fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
@@ -256,6 +288,7 @@ fn remove_dead_captive(
 fn check_dead(
   mut commands: Commands,
   query: Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<PlayerShip>, Without<Wreck>)>,
+  hook_query: Query<Entity, With<Hook>>,
   mut ev_wreck_writer: EventWriter<WreckedEvent>,
   mut play_state: ResMut<NextState<PlayState>>,
   scene_assets: Res<SceneAssets>,
@@ -275,6 +308,9 @@ fn check_dead(
       ));
       commands.entity(entity).despawn_recursive();
       play_state.set(PlayState::Dead);
+      //get rid of any floating hooks
+      let Ok(hook_entity) = hook_query.get_single() else{ continue; };
+      commands.entity(hook_entity).despawn_recursive();
     }
   }
 }
