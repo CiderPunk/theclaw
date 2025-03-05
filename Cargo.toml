@@ -8,7 +8,6 @@ description = "The Claw 2 - electric boogaloo"
 [dependencies]
 bevy =  "0.15.3"
 rand = "0.8.5"
-bevy_mod_billboard = { git = "https://github.com/voximity/bevy_mod_billboard.git"}
 
 [lib]
 name = "claw2_lib"

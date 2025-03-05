@@ -209,19 +209,10 @@ fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
   let Ok(mut transform) = query.get_single_mut() else {
     return;
   };
-  let translation = transform.translation;
-  if translation.x > BOUNDS_X_MAX {
-    transform.translation.x = BOUNDS_X_MAX;
-  }
-  if translation.x < BOUNDS_X_MIN {
-    transform.translation.x = BOUNDS_X_MIN;
-  }
-  if translation.z > BOUNDS_Z_MAX {
-    transform.translation.z = BOUNDS_Z_MAX;
-  }
-  if translation.z < BOUNDS_Z_MIN {
-    transform.translation.z = BOUNDS_Z_MIN;
-  }
+  
+  transform.translation.x = transform.translation.x.clamp(BOUNDS_X_MIN, BOUNDS_X_MAX) ;
+  transform.translation.z = transform.translation.z.clamp(BOUNDS_Z_MIN, BOUNDS_Z_MAX) ;
+
 }
 
 fn retrieve_hook(

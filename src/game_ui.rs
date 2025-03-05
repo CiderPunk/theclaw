@@ -39,7 +39,7 @@ fn lives_update(
   game: Single<&Game>,
 ) {
 
-  life_display.0 = format!("Lives: {}", game.lives);
+  life_display.0 = format!("Ships: {}", game.lives);
 }
 
 

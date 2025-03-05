@@ -1,7 +1,4 @@
-use bevy::{
-  ecs::schedule::{LogLevel, ScheduleBuildSettings},
-  prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::state::GameState;
 
@@ -36,12 +33,13 @@ impl Plugin for SchedulingPlugin {
           .after(TransformSystem::TransformPropagate)
           .run_if(in_state(GameState::Playing)),
       );
-
+      /*
     app.edit_schedule(Update, |schedule| {
       schedule.set_build_settings(ScheduleBuildSettings {
         ambiguity_detection: LogLevel::Warn,
         ..default()
       });
     });
+     */
   }
 }
