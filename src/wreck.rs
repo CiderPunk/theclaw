@@ -70,7 +70,7 @@ fn update_wrecks(
 
     if wreck.time_to_blast.just_finished() {
       ev_splosion_writer.send(SplosionEvent::new(
-        transform.translation(),
+        transform.translation() + Vec3::new(0., wreck.time_to_live.fraction_remaining() * 2.0, 0.0),
         wreck.blast_size * wreck.time_to_live.fraction(),
         velocity.0,
       ));
@@ -127,9 +127,9 @@ fn add_wreck_material(
   children: Query<&Children>,
   wreck_material: Res<WreckMaterial>,
 ) {
-  info!("adding material!");
+  //info!("adding material!");
   for descendant in children.iter_descendants(trigger.entity()) {
-    info!("descendant {:?}", descendant);
+    //info!("descendant {:?}", descendant);
     commands
       .entity(descendant)
       .insert(MeshMaterial3d(wreck_material.0.clone()));

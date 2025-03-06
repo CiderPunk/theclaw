@@ -27,6 +27,7 @@ use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
 use game_ui::GameUiPlugin;
+use health::HealthPlugin;
 use hook::HookPlugin;
 
 use input::GameInputPlugin;
@@ -88,8 +89,10 @@ pub fn run_game() {
     ))
     .add_plugins((
       GameInputPlugin,
-      GameManagerPlugin,))
-    .add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
+      GameManagerPlugin,
+      HealthPlugin,
+    ))
+    //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
     .run();
 }
@@ -99,11 +102,12 @@ fn check_window(
   mut ev_game_state_writer: EventWriter<GameStateEvent>,
 ) {
   for _ in ev_windows_close_reader.read() {
+    info!("shutting down");
     ev_game_state_writer.send(GameStateEvent::new(GameState::Shutdown));
   }
 }
 
-fn make_visible(mut window: Single<&mut Window>, frames: Res<FrameCount>) {
+fn _make_visible(mut window: Single<&mut Window>, frames: Res<FrameCount>) {
   info!("frame {:?}", frames.0);
   if frames.0 == 1 {
     window.visible = true;

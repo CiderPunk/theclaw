@@ -3,17 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds_check::BoundsDespawn,
-  bullet::ShootEvent,
-  collision_detection::Collider,
-  enemy::*,
-  health::Health,
-  hook::{Hookable, Hooked},
-  movement::{Roller, Velocity},
-  scheduling::GameSchedule,
-  ship::Captured,
-  wreck::{Wreck, WreckedEvent},
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, game_manager::PointEvent, health::Health, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, wreck::{Wreck, WreckedEvent}
 };
 
 const SIDEWINDER_SPAWN_TIME_SECONDS: f32 = 2.;
@@ -21,6 +11,8 @@ const SIDEWINDER_SPIN_SPEED: f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED: f32 = 16.0;
 const SIDEWINDER_COLLISION_RADIUS: f32 = 2.5;
+const SIDEWINDER_COLLISION_DAMAGE:f32 = 25.0;
+const SIDEWINDER_HEALTH:f32 = 25.0;
 
 const SIDEWINDER_SHOOT_TIME: f32 = 1.7;
 const SIDEWINDER_CAPTURED_SHOOT_TIME: f32 = 0.4;
@@ -29,6 +21,8 @@ const SIDEWINDER_BLAST_SIZE: f32 = 3.0;
 
 const SIDEWINDER_HOOK_TRANSLATION: Vec3 = Vec3::new(-3., 0., 0.);
 const SIDEWINDER_HOOK_ROTATION: f32 = 0.0;
+
+const SIDEWINDER_POINTS:u64 = 100;
 
 pub struct SidewinderPlugin;
 
@@ -108,10 +102,11 @@ fn check_dead(
   mut commands: Commands,
   query: Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<Sidewinder>, Without<Wreck>)>,
   mut ev_wreck_writer: EventWriter<WreckedEvent>,
+  mut ev_point_writer: EventWriter<PointEvent>,
   scene_assets: Res<SceneAssets>,
 ) {
   for (entity, health, transform, velocity) in query.iter() {
-    if health.0 <= 0. {
+    if health.value <= 0. {
       info!("dead");
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
       ev_wreck_writer.send(WreckedEvent::new(
@@ -124,6 +119,7 @@ fn check_dead(
         SIDEWINDER_BLAST_SIZE,
       ));
       commands.entity(entity).despawn_recursive();
+      ev_point_writer.send(PointEvent(SIDEWINDER_POINTS));
     }
   }
 }
@@ -155,12 +151,13 @@ fn spawn_sidewinder(
     Velocity(Vec3::new(20.0, 0., vel_z)),
     Collider {
       radius: SIDEWINDER_COLLISION_RADIUS,
+      collision_damage:SIDEWINDER_COLLISION_DAMAGE,
     },
     Hookable::new(
       SIDEWINDER_HOOK_TRANSLATION,
       Quat::from_rotation_z(SIDEWINDER_HOOK_ROTATION),
     ),
-    Health(25.0),
+    Health::new(SIDEWINDER_HEALTH),
     Roller {
       roll_speed: SIDEWINDER_SPIN_SPEED,
     },

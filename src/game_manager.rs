@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-const GAME_START_LIVES:u32 = 99;
+const GAME_START_LIVES:u32 = 2;
 const GAME_RESPAWN_TIME:f32 = 4.;
 use crate::{scheduling::GameSchedule, state::GameState};
 
@@ -11,11 +11,15 @@ impl Plugin for GameManagerPlugin{
     app
       .add_systems(OnEnter(GameState::Playing), init_game)
       .add_systems(OnEnter(PlayState::Dead), start_respawn_timer)
-      .add_systems(Update, (respawn_player).in_set(GameSchedule::EntityUpdates))
-      .init_state::<PlayState>();
+      .add_systems(Update, (respawn_player).in_set(GameSchedule::EntityUpdates).run_if(in_state(PlayState::Dead)))
+      .add_systems(Update, point_update.in_set(GameSchedule::PreDespawnEntities))
+      .init_state::<PlayState>()
+      .add_event::<PointEvent>();
   }
 }
 
+#[derive(Event)]
+pub struct PointEvent(pub u64);
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum PlayState{
@@ -33,19 +37,25 @@ pub struct Game{
   respawn_timer:Timer,
 }
 
+fn point_update(mut game:Single<&mut Game>, mut ev_point_reader:EventReader<PointEvent>){
+  for point in ev_point_reader.read() { 
+    game.score += point.0;   
+    info!("score: {:?}", game.score);
+  }
+}
 
 fn start_respawn_timer(mut game:Single<&mut Game>){
   game.respawn_timer.reset();
 }
 
-fn respawn_player(mut commands:Commands, mut game:Single<&mut Game>,  time:Res<Time>,  mut play_state: ResMut<NextState<PlayState>>){
+fn respawn_player(mut game:Single<&mut Game>,  time:Res<Time>,  mut play_state: ResMut<NextState<PlayState>>){
   game.respawn_timer.tick(time.delta());
   if game.respawn_timer.just_finished(){
-    if game.lives == 0{
-      
+    if game.lives > 0{
+      game.lives -= 1;
       //TODO: goto end screen 
     }
-    game.lives -= 1;
+    info!("spawning player, ships left:{:?}", game.lives);
     play_state.set(PlayState::Alive);
   }
 }
