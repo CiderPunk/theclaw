@@ -127,9 +127,9 @@ fn add_wreck_material(
   children: Query<&Children>,
   wreck_material: Res<WreckMaterial>,
 ) {
-  info!("adding material!");
+  //info!("adding material!");
   for descendant in children.iter_descendants(trigger.entity()) {
-    info!("descendant {:?}", descendant);
+    //info!("descendant {:?}", descendant);
     commands
       .entity(descendant)
       .insert(MeshMaterial3d(wreck_material.0.clone()));

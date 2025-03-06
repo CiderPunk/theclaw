@@ -27,6 +27,7 @@ use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
 use game_ui::GameUiPlugin;
+use health::HealthPlugin;
 use hook::HookPlugin;
 
 use input::GameInputPlugin;
@@ -88,7 +89,9 @@ pub fn run_game() {
     ))
     .add_plugins((
       GameInputPlugin,
-      GameManagerPlugin,))
+      GameManagerPlugin,
+      HealthPlugin,
+    ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
     .run();

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{bullet::Bullet, health::Health, hook::Hook, scheduling::GameSchedule, ship::Invincible};
+use crate::{bullet::Bullet, health::{Health, HitMarker}, hook::Hook, scheduling::GameSchedule, ship::Invincible};
 
 pub struct CollsionDetectionPlugin;
 
@@ -14,6 +14,7 @@ impl Plugin for CollsionDetectionPlugin {
           enemy_bullet_collision_detection,
           player_collision_detection,
           apply_bullet_collisions,
+          apply_collisions,
         )
           .chain()
           .in_set(GameSchedule::CollisionDetection),
@@ -26,11 +27,12 @@ impl Plugin for CollsionDetectionPlugin {
 #[derive(Component)]
 pub struct Collider {
   pub radius: f32,
+  pub collision_damage: f32,
 }
 
 impl Collider {
-  pub fn new(radius: f32) -> Self {
-    Self { radius }
+  pub fn new(radius: f32, collision_damage: f32) -> Self {
+    Self { radius, collision_damage }
   }
 }
 
@@ -39,13 +41,14 @@ pub struct Player;
 
 #[derive(Event)]
 pub struct CollisionEvent {
-  pub entity: Entity,
-  pub collided: Entity,
+  pub player: Entity,
+  pub other: Entity,
+  pub damage: f32,
 }
 
 impl CollisionEvent {
-  pub fn new(entity: Entity, collided: Entity) -> Self {
-    Self { entity, collided }
+  pub fn new(entity: Entity, collided: Entity, damage: f32) -> Self {
+    Self { player: entity, other: collided, damage:damage }
   }
 }
 
@@ -108,13 +111,37 @@ fn player_collision_detection(
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
         //info!("Collision detected! dist: {:?},  player:{:?}, other: {:?} player pos: {:?} other pos: {:?}", dist_sqr, player, enemy, player_transform.translation(), enemy_transform.translation());
-        ev_collision.send(CollisionEvent::new(player, enemy));
+        ev_collision.send(CollisionEvent::new(player, enemy, enemy_collider.collision_damage));
       }
     }
   }
 }
 
+
+fn apply_collisions(
+  mut ev_collision_reader: EventReader<CollisionEvent>,
+  mut health: Query<&mut Health>,
+  
+) {
+  for &CollisionEvent { player, other, damage } in ev_collision_reader.read() {
+    let Ok(mut player_health) = health.get_mut(player) else {
+      continue;
+    };
+    player_health.value -= damage;
+    //set_damaged(player_health);
+    //player_health.set_damaged();
+
+    let Ok(mut enemy_health) = health.get_mut(other) else {
+      continue;
+    };
+    enemy_health.value -= 100000.0;
+  }
+}
+
+
+
 fn apply_bullet_collisions(
+  mut commands:Commands,
   mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
   mut health_query: Query<&mut Health>,
   mut bullet_query: Query<&mut Bullet>,
@@ -128,6 +155,7 @@ fn apply_bullet_collisions(
     let Ok(mut health) = health_query.get_mut(entity) else {
       continue;
     };
-    health.0 -= bullet_details.damage;
+    health.value -= bullet_details.damage;
+    commands.entity(entity).insert(HitMarker::new());
   }
 }

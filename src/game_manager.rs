@@ -12,10 +12,14 @@ impl Plugin for GameManagerPlugin{
       .add_systems(OnEnter(GameState::Playing), init_game)
       .add_systems(OnEnter(PlayState::Dead), start_respawn_timer)
       .add_systems(Update, (respawn_player).in_set(GameSchedule::EntityUpdates).run_if(in_state(PlayState::Dead)))
-      .init_state::<PlayState>();
+      .add_systems(Update, point_update.in_set(GameSchedule::PreDespawnEntities))
+      .init_state::<PlayState>()
+      .add_event::<PointEvent>();
   }
 }
 
+#[derive(Event)]
+pub struct PointEvent(pub u64);
 
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash, Default, Copy)]
 pub enum PlayState{
@@ -33,6 +37,12 @@ pub struct Game{
   respawn_timer:Timer,
 }
 
+fn point_update(mut game:Single<&mut Game>, mut ev_point_reader:EventReader<PointEvent>){
+  for point in ev_point_reader.read() { 
+    game.score += point.0;   
+    info!("score: {:?}", game.score);
+  }
+}
 
 fn start_respawn_timer(mut game:Single<&mut Game>){
   game.respawn_timer.reset();

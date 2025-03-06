@@ -57,9 +57,10 @@ fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
         damping: SHIP_DAMPING,
         max_speed: SHIP_MAX_SPEED,
       },
-      Health(SHIP_INITIAL_HEALTH),
+      Health::new(SHIP_INITIAL_HEALTH),
       Collider {
-        radius: SHIP_COLLISION_RADIUS,
+        radius: SHIP_COLLISION_RADIUS, 
+        collision_damage:0.0,
       },
       Player,
       Invincible{
@@ -181,6 +182,8 @@ fn fire_controls(
               ))
               .id(),
           );
+          //remove invincible if present
+          commands.entity(entity).remove::<Invincible>();
         }
       }
     }
@@ -262,7 +265,7 @@ fn remove_dead_captive(
   let Ok((captive_entity, captured, health)) = query.get_single_mut() else {
     return;
   };
-  if health.0 <= 0. {
+  if health.value <= 0. {
     info!("removing dead captive: {:?}", captive_entity);
     commands
       .entity(captured.captor)
@@ -285,7 +288,7 @@ fn check_dead(
   scene_assets: Res<SceneAssets>,
 ) {
   for (entity, health, transform, velocity) in query.iter() {
-    if health.0 <= 0. {
+    if health.value <= 0. {
       info!("dead");
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
       ev_wreck_writer.send(WreckedEvent::new(
