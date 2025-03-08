@@ -177,7 +177,7 @@ fn apply_collisions(
     (With<Hookable>, Without<Hook>),
   >,
 ) {
-  for &CollisionEvent { player: entity, other: collided, damage:f32 } in ev_collision.read() {
+  for &CollisionEvent { player: entity, other: collided } in ev_collision.read() {
     let Ok((mut hook, hook_transform)) = hook_query.get_mut(entity) else {
       continue;
     };

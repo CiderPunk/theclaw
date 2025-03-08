@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{bullet::Bullet, health::{Health, HitMarker}, hook::Hook, scheduling::GameSchedule, ship::Invincible};
+use crate::{bullet::{Bullet, BulletHitEvent}, health::HealthEvent, hook::Hook, scheduling::GameSchedule, ship::Invincible};
 
 pub struct CollsionDetectionPlugin;
 
@@ -9,13 +9,11 @@ impl Plugin for CollsionDetectionPlugin {
     app
       .add_systems(
         PostUpdate,
-        (
-          player_bullet_collision_detection,
-          enemy_bullet_collision_detection,
-          player_collision_detection,
-          apply_bullet_collisions,
-          apply_collisions,
-        )
+          (
+            player_bullet_collision_detection,
+            enemy_bullet_collision_detection,
+            player_collision_detection,
+          )
           .chain()
           .in_set(GameSchedule::CollisionDetection),
       )
@@ -43,12 +41,11 @@ pub struct Player;
 pub struct CollisionEvent {
   pub player: Entity,
   pub other: Entity,
-  pub damage: f32,
 }
 
 impl CollisionEvent {
-  pub fn new(entity: Entity, collided: Entity, damage: f32) -> Self {
-    Self { player: entity, other: collided, damage:damage }
+  pub fn new(entity: Entity, collided: Entity) -> Self {
+    Self { player: entity, other: collided }
   }
 }
 
@@ -65,41 +62,46 @@ impl BulletCollisionEvent {
 }
 
 fn player_bullet_collision_detection(
-  mut ev_bullet_collision: EventWriter<BulletCollisionEvent>,
-  bullet_query: Query<(Entity, &GlobalTransform), (With<Bullet>, With<Player>)>,
+  mut ev_health_writer: EventWriter<HealthEvent>,
+  mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
+  bullet_query: Query<(Entity, &GlobalTransform, &Bullet),With<Player>>,
   target_query: Query<(Entity, &GlobalTransform, &Collider), Without<Player>>,
 ) {
-  for (bullet, bullet_transform) in bullet_query.iter() {
-    for (target, tagret_transform, collider) in target_query.iter() {
+  for (bullet_entity, bullet_transform, bullet) in bullet_query.iter() {
+    for (target_entity, tagret_transform, collider) in target_query.iter() {
       let dist_sqr = bullet_transform
         .translation()
         .distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius {
-        ev_bullet_collision.send(BulletCollisionEvent::new(target, bullet));
+        ev_health_writer.send(HealthEvent::new(target_entity, bullet.damage));
+        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity));
       }
     }
   }
 }
 
 fn enemy_bullet_collision_detection(
-  mut ev_bullet_collision: EventWriter<BulletCollisionEvent>,
-  bullet_query: Query<(Entity, &GlobalTransform), (With<Bullet>, Without<Player>)>,
+  mut ev_health_writer: EventWriter<HealthEvent>,
+  mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
+  bullet_query: Query<(Entity, &GlobalTransform, &Bullet), Without<Player>>,
   target_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Hook>, Without<Invincible>)>,
 ) {
-  for (target, tagret_transform, collider) in target_query.iter() {
-    for (bullet, bullet_transform) in bullet_query.iter() {
+  for (target_entity, tagret_transform, collider) in target_query.iter() {
+    for (bullet_entity, bullet_transform, bullet) in bullet_query.iter() {
       let dist_sqr = bullet_transform
         .translation()
         .distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius {
-        ev_bullet_collision.send(BulletCollisionEvent::new(target, bullet));
+        ev_health_writer.send(HealthEvent::new(target_entity, bullet.damage));
+        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity));
       }
     }
   }
 }
 
 fn player_collision_detection(
-  mut ev_collision: EventWriter<CollisionEvent>,
+  mut ev_health_writer: EventWriter<HealthEvent>,
+  mut ev_collisin_writer: EventWriter<CollisionEvent>,
   player_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Invincible>)>,
   enemy_query: Query<(Entity, &GlobalTransform, &Collider), Without<Player>>,
 ) {
@@ -110,14 +112,18 @@ fn player_collision_detection(
         .distance_squared(enemy_transform.translation());
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
+
+        ev_health_writer.send(HealthEvent::new(player, enemy_collider.collision_damage));
+        ev_health_writer.send(HealthEvent::new(enemy,1000.0));
+
         //info!("Collision detected! dist: {:?},  player:{:?}, other: {:?} player pos: {:?} other pos: {:?}", dist_sqr, player, enemy, player_transform.translation(), enemy_transform.translation());
-        ev_collision.send(CollisionEvent::new(player, enemy, enemy_collider.collision_damage));
+        ev_collisin_writer.send(CollisionEvent::new(player, enemy));
       }
     }
   }
 }
 
-
+/*
 fn apply_collisions(
   mut ev_collision_reader: EventReader<CollisionEvent>,
   mut health: Query<&mut Health>,
@@ -137,9 +143,9 @@ fn apply_collisions(
     enemy_health.value -= 100000.0;
   }
 }
+ */
 
-
-
+/*
 fn apply_bullet_collisions(
   mut commands:Commands,
   mut ev_bullet_collision: EventReader<BulletCollisionEvent>,
@@ -159,3 +165,4 @@ fn apply_bullet_collisions(
     commands.entity(entity).insert(HitMarker::new());
   }
 }
+ */
