@@ -1,6 +1,6 @@
 use  bevy::prelude::*;
 
-use crate::{health::HealthEvent, scheduling::GameSchedule};
+use crate::{health::{Health, HealthEvent}, scheduling::GameSchedule};
 
 
 const HIT_MARKER_COLOUR:Hsla = Hsla::new(40., 0.2, 0.95, 1.0);
@@ -36,8 +36,6 @@ impl Default for HitMarker{
   }
 }
 
-
-
 #[derive(Resource)]
 struct HitMarkerMaterial(Handle<StandardMaterial>);
 
@@ -55,18 +53,18 @@ fn init_hit_marker(mut commands:Commands, mut materials: ResMut<Assets<StandardM
 fn apply_hit_marker(
   mut commands:Commands,
   mut ev_health_reader:EventReader<HealthEvent>,
-  mut query:Query<&mut HitMarker>,
+  mut query:Query<(&mut HitMarker, &Health)>,
   children:Query<&Children>,
   mesh_materials: Query<&MeshMaterial3d<StandardMaterial>>,
   hit_material:Res<HitMarkerMaterial>,
 
 ){
   for HealthEvent{ entity,  health_adjustment } in ev_health_reader.read(){
-    let Ok( mut hit_marker ) = query.get_mut(*entity) else {
+    let Ok(( mut hit_marker, health )) = query.get_mut(*entity) else {
       continue;
     };
 
-    if *health_adjustment < 0.{
+    if *health_adjustment < 0. && health.value > 0.{
       let mut found_material = false;
       for descendant in children.iter_descendants(*entity){
         if let Some(material) = mesh_materials
