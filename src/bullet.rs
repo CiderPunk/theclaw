@@ -9,13 +9,26 @@ pub struct BulletPlugin;
 
 impl Plugin for BulletPlugin {
   fn build(&self, app: &mut App) {
-    app.add_event::<ShootEvent>().add_systems(
-      Update,
-      (
-        do_shooting.in_set(GameSchedule::EntityUpdates),
-        do_impact.in_set(GameSchedule::DespawnEntities),
-      ),
+    app
+    .add_event::<ShootEvent>()
+    .add_event::<BulletHitEvent>()
+    .add_systems(Update,
+        (
+          do_shooting.in_set(GameSchedule::EntityUpdates),
+          bullet_hits.in_set(GameSchedule::DespawnEntities),
+        ),
     );
+  }
+}
+
+#[derive(Event)]
+pub struct BulletHitEvent{
+  bullet:Entity,
+}
+
+impl BulletHitEvent{
+  pub fn new (entity:Entity)->Self{
+    Self{ bullet:entity }
   }
 }
 
@@ -24,14 +37,16 @@ pub struct ShootEvent {
   pub is_player: bool,
   pub start: Vec3,
   pub velocity: Vec3,
+  pub damage:f32,
 }
 
 impl ShootEvent {
-  pub fn new(is_player: bool, start: Vec3, velocity: Vec3) -> Self {
+  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage:f32) -> Self {
     Self {
       is_player,
       start,
       velocity,
+      damage,
     }
   }
 }
@@ -39,7 +54,7 @@ impl ShootEvent {
 #[derive(Component)]
 #[require(BoundsDespawn)]
 pub struct Bullet {
-  pub hit: bool,
+  //pub hit: bool,
   pub damage: f32,
 }
 
@@ -52,15 +67,13 @@ fn do_shooting(
     is_player,
     start,
     velocity,
+    damage,
   } in ev_shoot_events.read()
   {
     //FIXME: yuck
     if is_player {
       commands.spawn((
-        Bullet {
-          hit: false,
-          damage: 20.0,
-        },
+        Bullet { damage },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
         Transform::from_translation(start),
@@ -69,10 +82,7 @@ fn do_shooting(
       ));
     } else {
       commands.spawn((
-        Bullet {
-          hit: false,
-          damage: 20.0,
-        },
+        Bullet { damage },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
         Transform::from_translation(start),
@@ -82,11 +92,9 @@ fn do_shooting(
   }
 }
 
-fn do_impact(mut commands: Commands, query: Query<(Entity, &Bullet)>) {
-  for (entity, bullet) in query.iter() {
-    if bullet.hit {
-      //play a sound or something
-      commands.entity(entity).despawn_recursive();
-    }
+fn bullet_hits(mut commands:Commands, mut ev_bullet_hit_reader:EventReader<BulletHitEvent>){
+  for hit_event in ev_bullet_hit_reader.read(){
+    commands.entity(hit_event.bullet).despawn_recursive();
+    //TODO: spawn hit effect / sound
   }
 }

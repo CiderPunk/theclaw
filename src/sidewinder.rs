@@ -11,11 +11,12 @@ const SIDEWINDER_SPIN_SPEED: f32 = 3.0;
 const SIDEWINDER_VERTICAL_VARIANCE: f32 = 10.0;
 const SIDEWINDER_SHOOT_SPEED: f32 = 16.0;
 const SIDEWINDER_COLLISION_RADIUS: f32 = 2.5;
-const SIDEWINDER_COLLISION_DAMAGE:f32 = 25.0;
+const SIDEWINDER_COLLISION_DAMAGE:f32 = -25.0;
+const SIDEWINDER_BULLET_DAMAGE: f32 = -20.0;
 const SIDEWINDER_HEALTH:f32 = 25.0;
 
 const SIDEWINDER_SHOOT_TIME: f32 = 1.7;
-const SIDEWINDER_CAPTURED_SHOOT_TIME: f32 = 0.4;
+const SIDEWINDER_CAPTURED_SHOOT_TIME: f32 = 0.8;
 const SIDEWINDER_CAPTURED_SHOOT_SPEED: f32 = 48.0;
 const SIDEWINDER_BLAST_SIZE: f32 = 3.0;
 
@@ -72,6 +73,7 @@ fn shoot_captured(
         true,
         transform.translation() + (transform.left() * 3.0),
         transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED,
+        SIDEWINDER_BULLET_DAMAGE,
       ));
     }
   }
@@ -89,10 +91,12 @@ fn shoot(
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
-      ev_shoot_event_writer.send(ShootEvent::new(
+
+    ev_shoot_event_writer.send(ShootEvent::new(
         false,
         transform.translation() + (transform.left() * 3.0),
-        velocity.0 + (transform.left() * SIDEWINDER_SHOOT_SPEED),
+        velocity.0 + (transform.left() * SIDEWINDER_SHOOT_SPEED), 
+        SIDEWINDER_BULLET_DAMAGE,
       ));
     }
   }
@@ -107,7 +111,7 @@ fn check_dead(
 ) {
   for (entity, health, transform, velocity) in query.iter() {
     if health.value <= 0. {
-      info!("dead");
+      info!("dead {:?}", entity);
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
       ev_wreck_writer.send(WreckedEvent::new(
         scene_assets.sidewinder.clone(),

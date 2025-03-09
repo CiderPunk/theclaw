@@ -12,6 +12,7 @@ const SHIP_MAX_SPEED: f32 = 40.0;
 const SHIP_MAX_PITCH: f32 = 0.1 * PI;
 const SHIP_PITCH_RATE: f32 = 2.;
 const SHIP_COLLISION_RADIUS: f32 = 1.8;
+const SHIP_COLLISION_DAMAGE: f32 = -1000.0;
 const SHIP_INITIAL_HEALTH: f32 = 30.0;
 
 const SHIP_INVINCIBLE_TIME: f32 = 1.5;
@@ -47,7 +48,8 @@ impl Plugin for ShipPlugin {
 }
 
 fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
-  commands
+
+commands
     .spawn((
       PlayerShip { ..default() },
       SceneRoot(scene_assets.ship.clone()),
@@ -60,7 +62,7 @@ fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
       Health::new(SHIP_INITIAL_HEALTH),
       Collider {
         radius: SHIP_COLLISION_RADIUS, 
-        collision_damage:0.0,
+        collision_damage:SHIP_COLLISION_DAMAGE,
       },
       Player,
       Invincible{
@@ -117,7 +119,7 @@ fn invincible(mut commands:Commands, mut query:Query<(&mut Invincible,  &mut Vis
   }
 }
 
-fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
+fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform )>, time: Res<Time>) {
   let Ok((mut ship, mut transform)) = query.get_single_mut() else {
     return;
   };
@@ -134,6 +136,8 @@ fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<T
 fn fire_controls(
   mut commands: Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
+
+  mut invinciblitiy_query:Query<&mut Invincible>,
   mut ev_trigger_event: EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
   mut hook_query: Query<&mut Hook>,
@@ -182,8 +186,13 @@ fn fire_controls(
               ))
               .id(),
           );
+          
           //remove invincible if present
-          commands.entity(entity).remove::<Invincible>();
+          if let Ok(mut invincibility) = invinciblitiy_query.get_single_mut() {
+            let time = invincibility.time.duration();
+            invincibility.time.set_elapsed(time);
+          }
+          
         }
       }
     }
