@@ -10,25 +10,26 @@ pub struct BulletPlugin;
 impl Plugin for BulletPlugin {
   fn build(&self, app: &mut App) {
     app
-    .add_event::<ShootEvent>()
-    .add_event::<BulletHitEvent>()
-    .add_systems(Update,
+      .add_event::<ShootEvent>()
+      .add_event::<BulletHitEvent>()
+      .add_systems(
+        Update,
         (
           do_shooting.in_set(GameSchedule::EntityUpdates),
           bullet_hits.in_set(GameSchedule::DespawnEntities),
         ),
-    );
+      );
   }
 }
 
 #[derive(Event)]
-pub struct BulletHitEvent{
-  bullet:Entity,
+pub struct BulletHitEvent {
+  bullet: Entity,
 }
 
-impl BulletHitEvent{
-  pub fn new (entity:Entity)->Self{
-    Self{ bullet:entity }
+impl BulletHitEvent {
+  pub fn new(entity: Entity) -> Self {
+    Self { bullet: entity }
   }
 }
 
@@ -37,11 +38,11 @@ pub struct ShootEvent {
   pub is_player: bool,
   pub start: Vec3,
   pub velocity: Vec3,
-  pub damage:f32,
+  pub damage: f32,
 }
 
 impl ShootEvent {
-  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage:f32) -> Self {
+  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage: f32) -> Self {
     Self {
       is_player,
       start,
@@ -92,8 +93,8 @@ fn do_shooting(
   }
 }
 
-fn bullet_hits(mut commands:Commands, mut ev_bullet_hit_reader:EventReader<BulletHitEvent>){
-  for hit_event in ev_bullet_hit_reader.read(){
+fn bullet_hits(mut commands: Commands, mut ev_bullet_hit_reader: EventReader<BulletHitEvent>) {
+  for hit_event in ev_bullet_hit_reader.read() {
     commands.entity(hit_event.bullet).despawn_recursive();
     //TODO: spawn hit effect / sound
   }

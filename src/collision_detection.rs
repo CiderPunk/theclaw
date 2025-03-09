@@ -1,6 +1,12 @@
 use bevy::prelude::*;
 
-use crate::{bullet::{Bullet, BulletHitEvent}, health::HealthEvent, hook::Hook, scheduling::GameSchedule, ship::Invincible};
+use crate::{
+  bullet::{Bullet, BulletHitEvent},
+  health::HealthEvent,
+  hook::Hook,
+  scheduling::GameSchedule,
+  ship::Invincible,
+};
 
 pub struct CollsionDetectionPlugin;
 
@@ -9,16 +15,16 @@ impl Plugin for CollsionDetectionPlugin {
     app
       .add_systems(
         PostUpdate,
-          (
-            player_bullet_collision_detection,
-            enemy_bullet_collision_detection,
-            player_collision_detection,
-          )
+        (
+          player_bullet_collision_detection,
+          enemy_bullet_collision_detection,
+          player_collision_detection,
+        )
           .chain()
           .in_set(GameSchedule::CollisionDetection),
       )
       .add_event::<CollisionEvent>();
-      //.add_event::<BulletCollisionEvent>();
+    //.add_event::<BulletCollisionEvent>();
   }
 }
 
@@ -30,7 +36,10 @@ pub struct Collider {
 
 impl Collider {
   pub fn new(radius: f32, collision_damage: f32) -> Self {
-    Self { radius, collision_damage }
+    Self {
+      radius,
+      collision_damage,
+    }
   }
 }
 
@@ -45,7 +54,10 @@ pub struct CollisionEvent {
 
 impl CollisionEvent {
   pub fn new(entity: Entity, collided: Entity) -> Self {
-    Self { player: entity, other: collided }
+    Self {
+      player: entity,
+      other: collided,
+    }
   }
 }
 /*
@@ -64,7 +76,7 @@ impl BulletCollisionEvent {
 fn player_bullet_collision_detection(
   mut ev_health_writer: EventWriter<HealthEvent>,
   mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
-  bullet_query: Query<(Entity, &GlobalTransform, &Bullet),With<Player>>,
+  bullet_query: Query<(Entity, &GlobalTransform, &Bullet), With<Player>>,
   target_query: Query<(Entity, &GlobalTransform, &Collider), Without<Player>>,
 ) {
   for (bullet_entity, bullet_transform, bullet) in bullet_query.iter() {
@@ -84,7 +96,10 @@ fn enemy_bullet_collision_detection(
   mut ev_health_writer: EventWriter<HealthEvent>,
   mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,
   bullet_query: Query<(Entity, &GlobalTransform, &Bullet), Without<Player>>,
-  target_query: Query<(Entity, &GlobalTransform, &Collider), (With<Player>, Without<Hook>, Without<Invincible>)>,
+  target_query: Query<
+    (Entity, &GlobalTransform, &Collider),
+    (With<Player>, Without<Hook>, Without<Invincible>),
+  >,
 ) {
   for (target_entity, tagret_transform, collider) in target_query.iter() {
     for (bullet_entity, bullet_transform, bullet) in bullet_query.iter() {
@@ -125,7 +140,7 @@ fn player_collision_detection(
 fn apply_collisions(
   mut ev_collision_reader: EventReader<CollisionEvent>,
   mut health: Query<&mut Health>,
-  
+
 ) {
   for &CollisionEvent { player, other, damage } in ev_collision_reader.read() {
     let Ok(mut player_health) = health.get_mut(player) else {
