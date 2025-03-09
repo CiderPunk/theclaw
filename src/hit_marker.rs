@@ -76,7 +76,7 @@ fn apply_hit_marker(
         }
       }
       if found_material{
-        info!("adding hitmarker for {:?}",entity);
+        //info!("adding hitmarker for {:?}",entity);
         hit_marker.active = true;
         hit_marker.timer.reset();
       }
@@ -98,7 +98,7 @@ fn update_hit_markers(
       if hit_marker.timer.just_finished(){
         hit_marker.active = false;
 
-        info!("removing hitmarker for {:?}",entity);
+        //info!("removing hitmarker for {:?}",entity);
         for descendant in children.iter_descendants(entity){
           if let Ok(original_material) = original_material_query.get(descendant){
             commands.entity(descendant).insert(MeshMaterial3d(original_material.0.clone())); 

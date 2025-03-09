@@ -1,7 +1,7 @@
-use bevy::{color::palettes::css::{BLUE, RED}, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
-  asset_loader::SceneAssets, game_manager::{Game, PlayState, PointEvent}, health::Health, scheduling::GameSchedule, ship::PlayerShip
+  asset_loader::SceneAssets, game_manager::{Game, PlayState }, health::Health, scheduling::GameSchedule, ship::PlayerShip
 };
 
 pub struct GameUiPlugin;
