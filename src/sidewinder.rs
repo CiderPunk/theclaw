@@ -111,7 +111,7 @@ fn check_dead(
 ) {
   for (entity, health, transform, velocity) in query.iter() {
     if health.value <= 0. {
-      info!("dead");
+      info!("dead {:?}", entity);
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
       ev_wreck_writer.send(WreckedEvent::new(
         scene_assets.sidewinder.clone(),

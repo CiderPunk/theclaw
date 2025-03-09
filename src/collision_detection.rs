@@ -17,8 +17,8 @@ impl Plugin for CollsionDetectionPlugin {
           .chain()
           .in_set(GameSchedule::CollisionDetection),
       )
-      .add_event::<CollisionEvent>()
-      .add_event::<BulletCollisionEvent>();
+      .add_event::<CollisionEvent>();
+      //.add_event::<BulletCollisionEvent>();
   }
 }
 
@@ -48,7 +48,7 @@ impl CollisionEvent {
     Self { player: entity, other: collided }
   }
 }
-
+/*
 #[derive(Event)]
 pub struct BulletCollisionEvent {
   pub entity: Entity,
@@ -60,7 +60,7 @@ impl BulletCollisionEvent {
     Self { entity, bullet }
   }
 }
-
+ */
 fn player_bullet_collision_detection(
   mut ev_health_writer: EventWriter<HealthEvent>,
   mut ev_bullet_hit_writer: EventWriter<BulletHitEvent>,

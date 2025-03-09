@@ -10,9 +10,9 @@ impl Plugin for HealthPlugin{
     app
       .add_systems(Startup, init_health)
       .add_systems(Update, (
-        apply_health_changes.in_set(GameSchedule::PreDespawnEntities),
+        apply_health_changes.in_set(GameSchedule::HealthAdjust),
         update_hit_markers.in_set(GameSchedule::EntityUpdates),
-      
+  
       ))
       .add_event::<HealthEvent>();
 

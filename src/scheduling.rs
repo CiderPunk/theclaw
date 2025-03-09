@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::schedule::{LogLevel, ScheduleBuildSettings}, prelude::*};
 
 use crate::state::GameState;
 
@@ -9,6 +9,7 @@ pub enum GameSchedule {
   CollisionDetection,
   DespawnEntities,
   PreDespawnEntities,
+  HealthAdjust,
 }
 
 pub struct SchedulingPlugin;
@@ -19,6 +20,7 @@ impl Plugin for SchedulingPlugin {
       .configure_sets(
         Update,
         (
+          GameSchedule::HealthAdjust,
           GameSchedule::PreDespawnEntities,
           GameSchedule::DespawnEntities,
           GameSchedule::UserInput,
@@ -33,13 +35,13 @@ impl Plugin for SchedulingPlugin {
           .after(TransformSystem::TransformPropagate)
           .run_if(in_state(GameState::Playing)),
       );
-      /*
+      
     app.edit_schedule(Update, |schedule| {
       schedule.set_build_settings(ScheduleBuildSettings {
         ambiguity_detection: LogLevel::Warn,
         ..default()
       });
     });
-     */
+     
   }
 }
