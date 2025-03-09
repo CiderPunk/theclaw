@@ -17,6 +17,7 @@ mod splosion;
 mod state;
 mod wreck;
 mod game_manager;
+mod hit_marker;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -28,6 +29,7 @@ use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
 use game_ui::GameUiPlugin;
 use health::HealthPlugin;
+use hit_marker::HitMarkerPlugin;
 use hook::HookPlugin;
 
 use input::GameInputPlugin;
@@ -91,6 +93,7 @@ pub fn run_game() {
       GameInputPlugin,
       GameManagerPlugin,
       HealthPlugin,
+      HitMarkerPlugin,
     ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)

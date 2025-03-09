@@ -3,7 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, game_manager::PointEvent, health::Health, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, wreck::{Wreck, WreckedEvent}
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::{Hookable, Hooked}, movement::{Roller, Velocity}, scheduling::GameSchedule, ship::Captured, wreck::{Wreck, WreckedEvent}
 };
 
 const SIDEWINDER_SPAWN_TIME_SECONDS: f32 = 2.;
@@ -16,7 +16,7 @@ const SIDEWINDER_BULLET_DAMAGE: f32 = -20.0;
 const SIDEWINDER_HEALTH:f32 = 25.0;
 
 const SIDEWINDER_SHOOT_TIME: f32 = 1.7;
-const SIDEWINDER_CAPTURED_SHOOT_TIME: f32 = 0.8;
+const SIDEWINDER_CAPTURED_SHOOT_TIME: f32 = 0.45;
 const SIDEWINDER_CAPTURED_SHOOT_SPEED: f32 = 48.0;
 const SIDEWINDER_BLAST_SIZE: f32 = 3.0;
 
@@ -51,7 +51,7 @@ impl Default for SpawnTimer {
 }
 
 #[derive(Component)]
-#[require(Enemy, BoundsDespawn, Hookable)]
+#[require(Enemy, BoundsDespawn, Hookable, HitMarker)]
 struct Sidewinder {
   shoot_timer: Timer,
 }
