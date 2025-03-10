@@ -13,8 +13,6 @@ const HEALTH_BAR_WIDTH_PER_HEALTH:f32 = 15. / 100.;
 
 pub struct GameUiPlugin;
 
-#[derive(Component)]
-struct HealthDisplay;
 
 #[derive(Component, Default)]
 struct HealthBorder(f32);

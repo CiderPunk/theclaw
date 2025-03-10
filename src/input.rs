@@ -132,25 +132,23 @@ fn read_touch(
       ));
     }
   }
-  match touch_tracker.move_finger {
-    Some(finger) => {
-      let mut found = false;
-      for touch in touches.iter() {
-        //move finger movement tracking
-        if finger == touch.id() {
-          found = true;
-          let diff = touch_tracker.last - touch.position();
-          if diff.length_squared() > 0.5 {
-            ev_movement_event.send(InputMovementEvent::new(diff * 2.));
-          }
-          touch_tracker.last = touch.position();
+
+  if let Some(finger) = touch_tracker.move_finger{
+    let mut found = false;
+    for touch in touches.iter() {
+      //move finger movement tracking
+      if finger == touch.id() {
+        found = true;
+        let diff = touch_tracker.last - touch.position();
+        if diff.length_squared() > 0.5 {
+          ev_movement_event.send(InputMovementEvent::new(diff * 2.));
         }
-      }
-      if !found {
-        touch_tracker.move_finger = None;
+        touch_tracker.last = touch.position();
       }
     }
-    None => (),
+    if !found {
+      touch_tracker.move_finger = None;
+    }
   }
 }
 

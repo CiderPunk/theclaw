@@ -76,13 +76,12 @@ fn apply_hit_marker(
     if *health_adjustment < 0. && health.value > 0. {
       let mut found_material = false;
       for descendant in children.iter_descendants(*entity) {
-        if let Some(material) = mesh_materials.get(descendant).ok() {
-
+        if let Ok(material) = mesh_materials.get(descendant) {
           let original_material = original_material_query.get(descendant);
           commands
             .entity(descendant)
             .insert(MeshMaterial3d(hit_material.0.clone()))
-            .insert_if_new_and(OriginalMaterial{ handle: material.clone_weak() }, ||{ !original_material.is_ok() });
+            .insert_if_new_and(OriginalMaterial{ handle: material.clone_weak() }, ||{ original_material.is_err() });
           
           found_material = true;
         }

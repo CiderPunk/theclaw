@@ -138,7 +138,7 @@ fn spawn_splosion(
       Mesh3d(mesh.0.clone()),
       MeshMaterial3d(material),
       transform,
-      Velocity(velocity.clone()),
+      Velocity(velocity),
     ));
   }
 }
