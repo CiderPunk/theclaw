@@ -101,12 +101,15 @@ fn init_game_ui(
       HealthBar(0.),
       Node{
         margin: UiRect::all(Val::Px(3.)),
+        border: UiRect::all(Val::Px(1.)),
         width:Val::Percent(100.0),
         height:Val::Px(20.0),
         ..default()
       },
       BorderRadius::all(Val::Px(5.)),
-      BackgroundColor(GREEN.into()),
+      BackgroundColor(Color::srgba(0.,0.7,0.,0.2)),
+      BorderColor(Color::srgba(0.,0.9,0.,0.4)),
+  
     ));
   });
 
