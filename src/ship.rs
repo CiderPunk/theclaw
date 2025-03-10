@@ -2,7 +2,16 @@ use bevy::prelude::*;
 use std::f32::consts::PI;
 
 use crate::{
-  asset_loader::SceneAssets, collision_detection::{Collider, Player}, game_manager::PlayState, health::Health, hit_marker::HitMarker, hook::{hook_builder, Hook, HookReturnedEvent, Hookable}, input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent}, movement::{Acceleration, Velocity}, scheduling::GameSchedule, state::GameState, wreck::{Wreck, WreckedEvent}
+  asset_loader::SceneAssets,
+  collision_detection::{Collider, Player},
+  game_manager::PlayState,
+  health::Health,
+  hit_marker::HitMarker,
+  hook::{hook_builder, Hook, HookReturnedEvent, Hookable},
+  input::{InputEventAction, InputEventType, InputMovementEvent, InputTriggerEvent},
+  movement::{Acceleration, Velocity},
+  scheduling::GameSchedule,
+  wreck::{Wreck, WreckedEvent},
 };
 
 const STARTING_TRANSLATION: Vec3 = Vec3::new(40.0, 0.0, 0.0);
@@ -13,7 +22,7 @@ const SHIP_MAX_PITCH: f32 = 0.1 * PI;
 const SHIP_PITCH_RATE: f32 = 2.;
 const SHIP_COLLISION_RADIUS: f32 = 1.8;
 const SHIP_COLLISION_DAMAGE: f32 = -1000.0;
-const SHIP_INITIAL_HEALTH: f32 = 30.0;
+const SHIP_INITIAL_HEALTH: f32 = 100.0;
 
 const SHIP_INVINCIBLE_TIME: f32 = 1.5;
 const SHIP_INVINCIBLE_FLICKER_RATE: f32 = 15.0;
@@ -32,7 +41,7 @@ impl Plugin for ShipPlugin {
       .add_systems(OnEnter(PlayState::Alive), spawn_ship)
       .add_systems(
         Update,
-        (movement_controls, update_pitch, fire_controls )
+        (movement_controls, update_pitch, fire_controls)
           .chain()
           .in_set(GameSchedule::UserInput),
       )
@@ -48,8 +57,7 @@ impl Plugin for ShipPlugin {
 }
 
 fn spawn_ship(mut commands: Commands, scene_assets: Res<SceneAssets>) {
-
-commands
+  commands
     .spawn((
       PlayerShip { ..default() },
       SceneRoot(scene_assets.ship.clone()),
@@ -61,14 +69,13 @@ commands
       },
       Health::new(SHIP_INITIAL_HEALTH),
       Collider {
-        radius: SHIP_COLLISION_RADIUS, 
-        collision_damage:SHIP_COLLISION_DAMAGE,
+        radius: SHIP_COLLISION_RADIUS,
+        collision_damage: SHIP_COLLISION_DAMAGE,
       },
       Player,
-      Invincible{
-        time:Timer::from_seconds(SHIP_INVINCIBLE_TIME, TimerMode::Once),
+      Invincible {
+        time: Timer::from_seconds(SHIP_INVINCIBLE_TIME, TimerMode::Once),
       },
-
     ))
     .with_child((
       DisplayHook,
@@ -96,30 +103,34 @@ pub struct Captured {
 }
 
 #[derive(Component)]
-pub struct Invincible{
-  time:Timer,
+pub struct Invincible {
+  time: Timer,
 }
 
-
-fn invincible(mut commands:Commands, mut query:Query<(&mut Invincible,  &mut Visibility, Entity)>, time:Res<Time>){
-  let Ok((mut invincible, mut visibilty, entity)) = query.get_single_mut() else{
+fn invincible(
+  mut commands: Commands,
+  mut query: Query<(&mut Invincible, &mut Visibility, Entity)>,
+  time: Res<Time>,
+) {
+  let Ok((mut invincible, mut visibilty, entity)) = query.get_single_mut() else {
     return;
   };
   invincible.time.tick(time.delta());
-  if invincible.time.just_finished(){
+  if invincible.time.just_finished() {
     commands.entity(entity).remove::<Invincible>();
     *visibilty = Visibility::Visible;
-  }
-  else{
-    
-    *visibilty =  match  (invincible.time.elapsed_secs() * SHIP_INVINCIBLE_FLICKER_RATE % SHIP_INVINCIBLE_FLICKER_RATIO).floor()  {
+  } else {
+    *visibilty = match (invincible.time.elapsed_secs() * SHIP_INVINCIBLE_FLICKER_RATE
+      % SHIP_INVINCIBLE_FLICKER_RATIO)
+      .floor()
+    {
       0.0 => Visibility::Hidden,
       _ => Visibility::Visible,
     }
   }
 }
 
-fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform )>, time: Res<Time>) {
+fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
   let Ok((mut ship, mut transform)) = query.get_single_mut() else {
     return;
   };
@@ -137,7 +148,7 @@ fn fire_controls(
   mut commands: Commands,
   mut query: Query<(Entity, &mut PlayerShip, &Velocity)>,
 
-  mut invinciblitiy_query:Query<&mut Invincible>,
+  mut invinciblitiy_query: Query<&mut Invincible>,
   mut ev_trigger_event: EventReader<InputTriggerEvent>,
   mut display_hook_query: Query<(&mut Visibility, &GlobalTransform), With<DisplayHook>>,
   mut hook_query: Query<&mut Hook>,
@@ -186,13 +197,12 @@ fn fire_controls(
               ))
               .id(),
           );
-          
+
           //remove invincible if present
           if let Ok(mut invincibility) = invinciblitiy_query.get_single_mut() {
             let time = invincibility.time.duration();
             invincibility.time.set_elapsed(time);
           }
-          
         }
       }
     }
@@ -221,10 +231,9 @@ fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
   let Ok(mut transform) = query.get_single_mut() else {
     return;
   };
-  
-  transform.translation.x = transform.translation.x.clamp(BOUNDS_X_MIN, BOUNDS_X_MAX) ;
-  transform.translation.z = transform.translation.z.clamp(BOUNDS_Z_MIN, BOUNDS_Z_MAX) ;
 
+  transform.translation.x = transform.translation.x.clamp(BOUNDS_X_MIN, BOUNDS_X_MAX);
+  transform.translation.z = transform.translation.z.clamp(BOUNDS_Z_MIN, BOUNDS_Z_MAX);
 }
 
 fn retrieve_hook(
@@ -286,8 +295,6 @@ fn remove_dead_captive(
   }
 }
 
-
-
 fn check_dead(
   mut commands: Commands,
   query: Query<(Entity, &Health, &GlobalTransform, &Velocity), (With<PlayerShip>, Without<Wreck>)>,
@@ -312,7 +319,9 @@ fn check_dead(
       commands.entity(entity).despawn_recursive();
       play_state.set(PlayState::Dead);
       //get rid of any floating hooks
-      let Ok(hook_entity) = hook_query.get_single() else{ continue; };
+      let Ok(hook_entity) = hook_query.get_single() else {
+        continue;
+      };
       commands.entity(hook_entity).despawn_recursive();
     }
   }
