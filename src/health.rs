@@ -33,11 +33,12 @@ impl HealthEvent {
 #[derive(Component, Default, Clone)]
 pub struct Health {
   pub value: f32,
+  pub max: f32,
 }
 
 impl Health {
   pub fn new(value: f32) -> Self {
-    Self { value: value }
+    Self { value: value, max:value }
   }
 }
 
@@ -53,6 +54,6 @@ fn apply_health_changes(
     let Ok(mut health) = query.get_mut(*entity) else {
       continue;
     };
-    health.value += health_adjustment;
+    health.value = (health.value + health_adjustment).min(health.max);
   }
 }

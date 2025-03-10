@@ -6,7 +6,8 @@ use crate::{
 };
 
 const HIT_MARKER_COLOUR: Hsla = Hsla::new(40., 0.2, 0.95, 1.0);
-const HIT_MARKER_TIME: f32 = 0.1666;
+//const HIT_MARKER_TIME: f32 = 0.1666;
+const HIT_MARKER_TIME: f32 = 0.0833;
 
 pub struct HitMarkerPlugin;
 
@@ -23,7 +24,9 @@ impl Plugin for HitMarkerPlugin {
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
-pub struct OriginalMaterial(Handle<StandardMaterial>);
+pub struct OriginalMaterial{
+  handle:Handle<StandardMaterial>,
+}
 
 #[derive(Component, Clone)]
 pub struct HitMarker {
@@ -59,6 +62,7 @@ fn apply_hit_marker(
   children: Query<&Children>,
   mesh_materials: Query<&MeshMaterial3d<StandardMaterial>>,
   hit_material: Res<HitMarkerMaterial>,
+  original_material_query: Query<&OriginalMaterial>,
 ) {
   for HealthEvent {
     entity,
@@ -73,12 +77,23 @@ fn apply_hit_marker(
       let mut found_material = false;
       for descendant in children.iter_descendants(*entity) {
         if let Some(material) = mesh_materials.get(descendant).ok() {
+
+          let original_material = original_material_query.get(descendant);
           commands
             .entity(descendant)
-            .insert_if_new(OriginalMaterial(material.clone_weak()))
-            .insert(MeshMaterial3d(hit_material.0.clone()));
+            .insert(MeshMaterial3d(hit_material.0.clone()))
+            .insert_if_new_and(OriginalMaterial{ handle: material.clone_weak() }, ||{ !original_material.is_ok() });
+          
           found_material = true;
         }
+      /*
+        else{
+          commands
+            .entity(descendant)
+            .insert(MeshMaterial3d(hit_material.0.clone()));
+
+        }
+         */
       }
       if found_material {
         //info!("adding hitmarker for {:?}",entity);
@@ -107,7 +122,7 @@ fn update_hit_markers(
           if let Ok(original_material) = original_material_query.get(descendant) {
             commands
               .entity(descendant)
-              .insert(MeshMaterial3d(original_material.0.clone()));
+              .insert(MeshMaterial3d(original_material.handle.clone()));
           }
         }
       }
