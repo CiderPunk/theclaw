@@ -158,7 +158,7 @@ fn retrieve_hook(
     };
 
     info!("hook returned, captive: {:?}", target);
-    if let Some(target) = target{
+    if let Some(target) = target {
       commands.entity(entity).remove_children(&[target]);
     }
     commands.entity(entity).despawn_recursive();

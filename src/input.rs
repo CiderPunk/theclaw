@@ -133,7 +133,7 @@ fn read_touch(
     }
   }
 
-  if let Some(finger) = touch_tracker.move_finger{
+  if let Some(finger) = touch_tracker.move_finger {
     let mut found = false;
     for touch in touches.iter() {
       //move finger movement tracking

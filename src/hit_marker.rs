@@ -24,8 +24,8 @@ impl Plugin for HitMarkerPlugin {
 
 #[derive(Component)]
 #[component(storage = "SparseSet")]
-pub struct OriginalMaterial{
-  handle:Handle<StandardMaterial>,
+pub struct OriginalMaterial {
+  handle: Handle<StandardMaterial>,
 }
 
 #[derive(Component, Clone)]
@@ -81,11 +81,16 @@ fn apply_hit_marker(
           commands
             .entity(descendant)
             .insert(MeshMaterial3d(hit_material.0.clone()))
-            .insert_if_new_and(OriginalMaterial{ handle: material.clone_weak() }, ||{ original_material.is_err() });
-          
+            .insert_if_new_and(
+              OriginalMaterial {
+                handle: material.clone_weak(),
+              },
+              || original_material.is_err(),
+            );
+
           found_material = true;
         }
-      /*
+        /*
         else{
           commands
             .entity(descendant)

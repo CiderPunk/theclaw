@@ -8,11 +8,9 @@ use crate::{
   ship::PlayerShip,
 };
 
-
-const HEALTH_BAR_WIDTH_PER_HEALTH:f32 = 15. / 100.;
+const HEALTH_BAR_WIDTH_PER_HEALTH: f32 = 15. / 100.;
 
 pub struct GameUiPlugin;
-
 
 #[derive(Component, Default)]
 struct HealthBorder(f32);
@@ -41,8 +39,8 @@ impl Plugin for GameUiPlugin {
 fn health_update(
   //mut health_display: Single<&mut Text, With<HealthDisplay>>,
   player_health_query: Query<&Health, With<PlayerShip>>,
-  healthbar_all:Single<(&mut HealthBar, &mut Node), Without<HealthBorder>>,
-  healthbar_container_all:Single<(&mut HealthBorder, &mut Node), Without<HealthBar>>,
+  healthbar_all: Single<(&mut HealthBar, &mut Node), Without<HealthBorder>>,
+  healthbar_container_all: Single<(&mut HealthBorder, &mut Node), Without<HealthBar>>,
 ) {
   let Ok(health) = player_health_query.get_single() else {
     return;
@@ -51,17 +49,16 @@ fn health_update(
   let (mut healthbar_container, mut hbc_node) = healthbar_container_all.into_inner();
 
   let mut force_health_update = false;
-  if healthbar_container.0 != health.max{
+  if healthbar_container.0 != health.max {
     hbc_node.width = Val::Vw(HEALTH_BAR_WIDTH_PER_HEALTH * health.max);
-    healthbar_container.0 =  health.max;
+    healthbar_container.0 = health.max;
     force_health_update = true;
   }
 
-  if force_health_update || healthbar.0 != health.value{
+  if force_health_update || healthbar.0 != health.value {
     hb_node.width = Val::Percent((health.value / health.max) * 100.);
     healthbar.0 = health.value;
   }
-
 }
 
 fn score_update(mut score_display: Single<&mut Text, With<ScoreDisplay>>, game: Single<&Game>) {
@@ -74,42 +71,39 @@ fn lives_update(mut life_display: Single<&mut Text, With<LivesDisplay>>, game: S
 
 fn init_game_ui(
   mut commands: Commands,
-  scene_assets: Res<SceneAssets>,   
- // asset_server: Res<AssetServer>,
+  scene_assets: Res<SceneAssets>,
+  // asset_server: Res<AssetServer>,
 ) {
-
-
-  commands.spawn((
-    HealthBorder(0.),
-    Node{
-      position_type: PositionType::Absolute,
-      top: Val::Px(12.0),
-      left: Val::Px(12.0),
-      width:Val::Vw(15.0),
-      height: Val::Px(30.0),
-      border: UiRect::all(Val::Px(2.)),
-      ..default()
-    },
-    
-    BorderRadius::all(Val::Px(5.)),
-    BorderColor(WHITE.into()),
-  ))
-  .with_children(|parent| {
-    parent.spawn((
-      HealthBar(0.),
-      Node{
-        margin: UiRect::all(Val::Px(3.)),
-        border: UiRect::all(Val::Px(1.)),
-        width:Val::Percent(100.0),
-        height:Val::Px(20.0),
+  commands
+    .spawn((
+      HealthBorder(0.),
+      Node {
+        position_type: PositionType::Absolute,
+        top: Val::Px(12.0),
+        left: Val::Px(12.0),
+        width: Val::Vw(15.0),
+        height: Val::Px(30.0),
+        border: UiRect::all(Val::Px(2.)),
         ..default()
       },
       BorderRadius::all(Val::Px(5.)),
-      BackgroundColor(Color::srgba(0.,0.7,0.,0.2)),
-      BorderColor(Color::srgba(0.,0.9,0.,0.4)),
-  
-    ));
-  });
+      BorderColor(WHITE.into()),
+    ))
+    .with_children(|parent| {
+      parent.spawn((
+        HealthBar(0.),
+        Node {
+          margin: UiRect::all(Val::Px(3.)),
+          border: UiRect::all(Val::Px(1.)),
+          width: Val::Percent(100.0),
+          height: Val::Px(20.0),
+          ..default()
+        },
+        BorderRadius::all(Val::Px(5.)),
+        BackgroundColor(Color::srgba(0., 0.7, 0., 0.2)),
+        BorderColor(Color::srgba(0., 0.9, 0., 0.4)),
+      ));
+    });
 
   commands.spawn((
     LivesDisplay,
@@ -136,7 +130,6 @@ fn init_game_ui(
         align_items: AlignItems::Center,
         ..default()
       },
-
       //Outline::new(Val::Px(1.), Val::ZERO, RED.into()),
     ))
     .with_children(|parent| {
@@ -152,8 +145,6 @@ fn init_game_ui(
           margin: UiRect::all(Val::Px(5.)),
           ..default()
         },
-      
-
         //Outline::new(Val::Px(1.), Val::ZERO, BLUE.into()),
       ));
     });
