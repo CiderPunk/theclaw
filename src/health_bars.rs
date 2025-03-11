@@ -1,6 +1,6 @@
-use bevy::{color::palettes::css::*, prelude::*};
+use bevy::{color::palettes::css::*, prelude::*, render::view::visibility};
 
-use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::PlayerShip, state::GameStateEvent};
+use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::{Captured, PlayerShip}, state::GameStateEvent};
 
 
 const HEALTH_BAR_WIDTH_PER_HEALTH: f32 = 15. / 100.;
@@ -11,12 +11,16 @@ pub struct HealthBarsPlugin;
 impl Plugin for HealthBarsPlugin{
   fn build(&self, app: &mut App) {
     app.add_systems(Startup, init_healthbars)
-    .add_systems(Update, health_update.in_set(GameSchedule::EntityUpdates));
+    .add_systems(Update, (captive_health_update, health_update).in_set(GameSchedule::EntityUpdates));
   }
 }
 
 
 
+
+
+#[derive(Component)]
+struct CaptiveUi;
 
 
 #[derive(Component, Default)]
@@ -62,6 +66,44 @@ fn health_update(
     healthbar.0 = health.value;
   }
 }
+
+fn captive_health_update(
+  //mut health_display: Single<&mut Text, With<HealthDisplay>>,
+  captive_health_query: Query<&Health, With<Captured>>,
+  captive_healthbar_all: Single<(&mut CaptiveHealthBar, &mut Node), Without<CaptiveHealthBorder>>,
+  captive_healthbar_container_all: Single<(&mut CaptiveHealthBorder, &mut Node), Without<CaptiveHealthBar>>,
+  mut captive_ui_query: Query<&mut Visibility, With<CaptiveUi>>,
+
+) {
+
+  let Ok(health) = captive_health_query.get_single() else {
+    for mut visibility in &mut captive_ui_query {
+      *visibility = Visibility::Hidden;
+    }
+    return;
+  };
+
+  for mut visibility in &mut captive_ui_query {
+    *visibility = Visibility::Visible;
+  }
+
+  let (mut healthbar, mut hb_node) = captive_healthbar_all.into_inner();
+  let (mut healthbar_container, mut hbc_node) = captive_healthbar_container_all.into_inner();
+
+
+  let mut force_health_update = false;
+
+  if healthbar_container.0 != health.max {
+    hbc_node.width = Val::Vw(HEALTH_BAR_WIDTH_PER_HEALTH * health.max);
+    healthbar_container.0 = health.max;
+    force_health_update = true;
+  }
+  if force_health_update || healthbar.0 != health.value {
+    hb_node.width = Val::Percent((health.value / health.max) * 100.);
+    healthbar.0 = health.value;
+  }
+}
+
 
 
 
@@ -156,6 +198,7 @@ fn init_healthbars(
 
         ..default()
       },
+      CaptiveUi,
       Visibility::Hidden,
       Text::new("Captive"),
       TextFont {
@@ -175,6 +218,7 @@ fn init_healthbars(
     .with_children(|parent|{
 
       parent.spawn((
+        CaptiveUi,
         CaptiveHealthBorder(0.),
         Node {
           width: Val::Vw(15.0),
