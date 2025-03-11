@@ -163,7 +163,7 @@ pub struct Wreck {
 impl Wreck {
   pub fn new(time_to_live: f32, blast_size: f32) -> Self {
     Self {
-      blast_size: blast_size,
+      blast_size,
       time_to_live: Timer::from_seconds(time_to_live, TimerMode::Once),
       time_to_blast: Timer::from_seconds(time_to_live / WRECK_BLASTS, TimerMode::Repeating),
     }

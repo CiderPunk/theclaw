@@ -6,7 +6,7 @@ mod collision_detection;
 mod constants;
 mod enemy;
 mod game_manager;
-mod game_ui;
+
 mod health;
 mod hit_marker;
 mod hook;
@@ -18,6 +18,8 @@ mod sidewinder;
 mod splosion;
 mod state;
 mod wreck;
+mod game_ui;
+mod health_bars;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -27,8 +29,10 @@ use camera::CameraPlugin;
 use collision_detection::CollsionDetectionPlugin;
 use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
+
 use game_ui::GameUiPlugin;
 use health::HealthPlugin;
+use health_bars::HealthBarsPlugin;
 use hit_marker::HitMarkerPlugin;
 use hook::HookPlugin;
 
@@ -84,7 +88,6 @@ pub fn run_game() {
       EnemyPlugin,
       SidewinderPlugin,
       BoundsCheckPlugin,
-      GameUiPlugin,
       HookPlugin,
       SplosionPlugin,
       WreckPlugin,
@@ -94,6 +97,8 @@ pub fn run_game() {
       GameManagerPlugin,
       HealthPlugin,
       HitMarkerPlugin,
+      GameUiPlugin,
+      HealthBarsPlugin,
     ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)

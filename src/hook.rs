@@ -63,7 +63,7 @@ pub struct Hook {
 impl Hook {
   pub fn new(owner: Entity) -> Self {
     Self {
-      owner: owner,
+      owner,
       returning: false,
       target: None,
     }
@@ -158,11 +158,8 @@ fn retrieve_hook(
     };
 
     info!("hook returned, captive: {:?}", target);
-    match target {
-      Some(target) => {
-        commands.entity(entity).remove_children(&[target]);
-      }
-      None => (),
+    if let Some(target) = target {
+      commands.entity(entity).remove_children(&[target]);
     }
     commands.entity(entity).despawn_recursive();
   }
