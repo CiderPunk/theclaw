@@ -8,7 +8,7 @@ use rand::Rng;
 
 use crate::{movement::Velocity, scheduling::GameSchedule};
 
-const SPLOSION_SHADER_PATH: &str = "shaders/animated_uv_shader.wgsl";
+const SPLOSION_SHADER_PATH: &str = "shaders/animated_uv_shader_v2.wgsl";
 
 const SPLOSION_FRAMES: usize = 18;
 const SPLOSION_ANIMATION_FPS: f32 = 15.0;
@@ -80,6 +80,10 @@ fn init_splosion(
       settings: SplosionSettings {
         frame_offset: i as f32,
         frame_rate: SPLOSION_ANIMATION_FPS,
+        frame_count:18.,
+        frames_deep:4.,
+        frames_wide:4.,
+        display_frames:16.,
         ..default()
       },
     })
@@ -160,6 +164,10 @@ fn update_splosion(
 pub struct SplosionSettings {
   frame_offset: f32,
   frame_rate: f32,
+  frames_wide:f32, 
+  frames_deep:f32,
+  frame_count:f32,
+  display_frames:f32,
   _webgl2_padding: Vec2,
 }
 
@@ -170,7 +178,6 @@ pub struct SplosionMaterial {
   #[texture(1)]
   #[sampler(2)]
   texture_atlas: Option<Handle<Image>>,
-
   alpha_mode: AlphaMode,
 }
 
