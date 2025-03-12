@@ -20,6 +20,7 @@ mod state;
 mod wreck;
 mod game_ui;
 mod health_bars;
+mod effect_sprite;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
@@ -27,6 +28,7 @@ use bounds_check::BoundsCheckPlugin;
 use bullet::BulletPlugin;
 use camera::CameraPlugin;
 use collision_detection::CollsionDetectionPlugin;
+use effect_sprite::EffectSpritePlugin;
 use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
 
@@ -41,7 +43,7 @@ use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
-use splosion::SplosionPlugin;
+//use splosion::SplosionPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
 use wreck::WreckPlugin;
 
@@ -89,8 +91,9 @@ pub fn run_game() {
       SidewinderPlugin,
       BoundsCheckPlugin,
       HookPlugin,
-      SplosionPlugin,
+      //SplosionPlugin,
       WreckPlugin,
+      EffectSpritePlugin,
     ))
     .add_plugins((
       GameInputPlugin,

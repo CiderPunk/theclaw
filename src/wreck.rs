@@ -1,10 +1,7 @@
 use bevy::{prelude::*, scene::SceneInstanceReady};
 
 use crate::{
-  constants::GRAVITY,
-  movement::{Acceleration, Roller, Velocity},
-  scheduling::GameSchedule,
-  splosion::SplosionEvent,
+  constants::GRAVITY, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, movement::{Acceleration, Roller, Velocity}, scheduling::GameSchedule
 };
 
 const WRECK_BLASTS: f32 = 4.0;
@@ -62,17 +59,18 @@ fn update_wrecks(
   mut commands: Commands,
   mut query: Query<(Entity, &mut Wreck, &GlobalTransform, &Velocity)>,
   time: Res<Time>,
-  mut ev_splosion_writer: EventWriter<SplosionEvent>,
+  mut ev_splosion_writer: EventWriter<EffectSpriteEvent>,
 ) {
   for (entity, mut wreck, transform, velocity) in query.iter_mut() {
     wreck.time_to_blast.tick(time.delta());
     wreck.time_to_live.tick(time.delta());
 
     if wreck.time_to_blast.just_finished() {
-      ev_splosion_writer.send(SplosionEvent::new(
+      ev_splosion_writer.send(EffectSpriteEvent::new(
         transform.translation() + Vec3::new(0., wreck.time_to_live.fraction_remaining() * 2.0, 0.0),
         wreck.blast_size * wreck.time_to_live.fraction(),
         velocity.0,
+        EffectSpriteType::Splosion,
       ));
     }
 
@@ -85,7 +83,7 @@ fn update_wrecks(
 fn spawn_wrecks(
   mut commands: Commands,
   mut ev_wrecked_reader: EventReader<WreckedEvent>,
-  mut ev_splosion_writer: EventWriter<SplosionEvent>,
+  mut ev_splosion_writer: EventWriter<EffectSpriteEvent>,
 ) {
   for WreckedEvent {
     scene,
@@ -113,10 +111,11 @@ fn spawn_wrecks(
     observer.watch_entity(entity);
     commands.spawn(observer);
 
-    ev_splosion_writer.send(SplosionEvent::new(
+    ev_splosion_writer.send(EffectSpriteEvent::new(
       *translation + Vec3::new(0., 0., -2.0),
       *blast_size,
       *velocity,
+      EffectSpriteType::Splosion,
     ));
   }
 }

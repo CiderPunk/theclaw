@@ -80,7 +80,7 @@ fn init_splosion(
       settings: SplosionSettings {
         frame_offset: i as f32,
         frame_rate: SPLOSION_ANIMATION_FPS,
-        frame_count:18.,
+        frame_count:SPLOSION_FRAMES as f32,
         frames_deep:4.,
         frames_wide:4.,
         display_frames:16.,

@@ -86,7 +86,7 @@ fn player_bullet_collision_detection(
         .distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius {
         ev_health_writer.send(HealthEvent::new(target_entity, bullet.damage));
-        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity));
+        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity, Some(target_entity)));
       }
     }
   }
@@ -109,7 +109,7 @@ fn enemy_bullet_collision_detection(
       if dist_sqr < collider.radius * collider.radius {
         info!("hit ent {:?}", target_entity);
         ev_health_writer.send(HealthEvent::new(target_entity, bullet.damage));
-        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity));
+        ev_bullet_hit_writer.send(BulletHitEvent::new(bullet_entity, Some(target_entity)));
       }
     }
   }
