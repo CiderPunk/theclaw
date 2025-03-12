@@ -1,8 +1,7 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 
 use crate::{
-  asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Player,
-  movement::Velocity, scheduling::GameSchedule,
+  asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Player, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, movement::Velocity, scheduling::GameSchedule
 };
 
 pub struct BulletPlugin;
@@ -25,11 +24,12 @@ impl Plugin for BulletPlugin {
 #[derive(Event)]
 pub struct BulletHitEvent {
   bullet: Entity,
+  other: Option<Entity>,
 }
 
 impl BulletHitEvent {
-  pub fn new(entity: Entity) -> Self {
-    Self { bullet: entity }
+  pub fn new(entity: Entity, other:Option<Entity>) -> Self {
+    Self { bullet: entity, other, }
   }
 }
 
@@ -93,9 +93,28 @@ fn do_shooting(
   }
 }
 
-fn bullet_hits(mut commands: Commands, mut ev_bullet_hit_reader: EventReader<BulletHitEvent>) {
+fn bullet_hits(
+  mut commands: Commands, 
+  mut ev_bullet_hit_reader: EventReader<BulletHitEvent>,
+  bullet_query: Query<&GlobalTransform>,
+  target_query: Query<&Velocity>,
+  mut ev_effect_sprite_writer: EventWriter<EffectSpriteEvent>,
+) {
   for hit_event in ev_bullet_hit_reader.read() {
+    
+    if let Ok(transform) = bullet_query.get(hit_event.bullet){
+      let mut velocity = Vec3::ZERO;
+      if hit_event.other.is_some(){
+
+        if let Ok(target_velocity) = target_query.get(hit_event.other.unwrap()){
+          velocity = target_velocity.0;
+        }
+      }
+
+      ev_effect_sprite_writer.send(EffectSpriteEvent::new(transform.translation(), 1., velocity, EffectSpriteType::Ricochet));
+    }
     commands.entity(hit_event.bullet).despawn_recursive();
+
     //TODO: spawn hit effect / sound
   }
 }
