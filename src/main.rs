@@ -1,4 +1,4 @@
 // main.rs
 fn main() {
-  claw2_lib::run_game();
+  claw2::run_game();
 }

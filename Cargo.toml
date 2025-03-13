@@ -10,7 +10,7 @@ bevy =  "0.15.3"
 rand = "0.8.5"
 
 [lib]
-name = "claw2_lib"
+name = "claw2"
 path = "src/lib.rs"
 crate-type = [
     "staticlib",
