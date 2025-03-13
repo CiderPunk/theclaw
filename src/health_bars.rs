@@ -1,6 +1,6 @@
-use bevy::{color::palettes::css::*, prelude::*, render::view::visibility};
+use bevy::{color::palettes::css::*, prelude::*};
 
-use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::{Captured, PlayerShip}, state::GameStateEvent};
+use crate::{asset_loader::SceneAssets, health::Health, scheduling::GameSchedule, ship::{Captured, PlayerShip}};
 
 
 const HEALTH_BAR_WIDTH_PER_HEALTH: f32 = 15. / 100.;

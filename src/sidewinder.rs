@@ -25,6 +25,7 @@ const SIDEWINDER_SHOOT_SPEED: f32 = 16.0;
 const SIDEWINDER_COLLISION_RADIUS: f32 = 2.5;
 const SIDEWINDER_COLLISION_DAMAGE: f32 = -25.0;
 const SIDEWINDER_BULLET_DAMAGE: f32 = -20.0;
+const SIDEWINDER_BULLET_SCALE: f32 = 1.0;
 const SIDEWINDER_HEALTH: f32 = 40.0;
 
 const SIDEWINDER_SHOOT_TIME: f32 = 1.7;
@@ -86,6 +87,7 @@ fn shoot_captured(
         transform.translation() + (transform.left() * 3.0),
         transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED,
         SIDEWINDER_BULLET_DAMAGE,
+        SIDEWINDER_BULLET_SCALE,
       ));
     }
   }
@@ -109,6 +111,7 @@ fn shoot(
         transform.translation() + (transform.left() * 3.0),
         velocity.0 + (transform.left() * SIDEWINDER_SHOOT_SPEED),
         SIDEWINDER_BULLET_DAMAGE,
+        SIDEWINDER_BULLET_SCALE,
       ));
     }
   }

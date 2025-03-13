@@ -15,7 +15,6 @@ mod movement;
 mod scheduling;
 mod ship;
 mod sidewinder;
-mod splosion;
 mod state;
 mod wreck;
 mod game_ui;
