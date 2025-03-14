@@ -9,6 +9,7 @@ const BULLET_SIZE: f32 = 0.5;
 pub struct SceneAssets {
   pub ship: Handle<Scene>,
   pub sidewinder: Handle<Scene>,
+  pub dropship: Handle<Scene>,
   pub hook: Handle<Scene>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
@@ -58,6 +59,7 @@ fn extract_assets(
   *scene_assets = SceneAssets {
     ship: gltf.named_scenes["ClawShip"].clone(),
     sidewinder: gltf.named_scenes["Sidewinder"].clone(),
+    dropship: gltf.named_scenes["dropship"].clone(),
     hook: gltf.named_scenes["Claw"].clone(),
     bullet: meshes.add(
       Sphere::new(BULLET_SIZE)
