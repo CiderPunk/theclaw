@@ -21,6 +21,8 @@ mod wreck;
 mod game_ui;
 mod health_bars;
 mod effect_sprite;
+mod ai;
+mod dropship;
 
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};

@@ -1,0 +1,15 @@
+{
+  "actions":[
+    {
+      "name":"Idle"
+    }
+  ],
+  "behaviour":[
+    {
+      "name":"initial"
+    },
+    {
+      "name":"attack run"
+    }
+  ]
+}
