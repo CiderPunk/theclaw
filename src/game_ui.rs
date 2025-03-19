@@ -34,10 +34,10 @@ fn lives_update(mut life_display: Single<&mut Text, With<LivesDisplay>>, game: S
 fn init_game_ui(
   mut commands: Commands,
   scene_assets: Res<SceneAssets>,
-  asset_server: Res<AssetServer>,
+  _asset_server: Res<AssetServer>,
 ) {
 
-  let image:Handle<Image> = asset_server.load("ui/life.png");
+  //let image:Handle<Image> = asset_server.load("ui/life.png");
 
   commands.spawn((
     LivesDisplay,
