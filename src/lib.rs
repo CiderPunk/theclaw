@@ -23,12 +23,14 @@ mod effect_sprite;
 mod ai;
 mod dropship;
 
+use ai::AiPlugin;
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
 use bounds_check::BoundsCheckPlugin;
 use bullet::BulletPlugin;
 use camera::CameraPlugin;
 use collision_detection::CollsionDetectionPlugin;
+use dropship::DropshipPlugin;
 use effect_sprite::EffectSpritePlugin;
 use enemy::EnemyPlugin;
 use game_manager::GameManagerPlugin;
@@ -44,7 +46,6 @@ use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
-//use splosion::SplosionPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
 use wreck::WreckPlugin;
 
@@ -103,6 +104,8 @@ pub fn run_game() {
       HitMarkerPlugin,
       GameUiPlugin,
       HealthBarsPlugin,
+      AiPlugin,
+      DropshipPlugin,
     ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
