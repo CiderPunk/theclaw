@@ -1,4 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
   asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Player, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, movement::Velocity, scheduling::GameSchedule
@@ -39,15 +39,17 @@ pub struct ShootEvent {
   pub start: Vec3,
   pub velocity: Vec3,
   pub damage: f32,
+  pub scale:f32,
 }
 
 impl ShootEvent {
-  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage: f32) -> Self {
+  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage: f32, scale:f32) -> Self {
     Self {
       is_player,
       start,
       velocity,
       damage,
+      scale,
     }
   }
 }
@@ -69,15 +71,18 @@ fn do_shooting(
     start,
     velocity,
     damage,
+    scale,
   } in ev_shoot_events.read()
   {
+
+    let transform =  Transform::from_translation(start).with_scale(Vec3::new(scale,scale,scale));
     //FIXME: yuck
     if is_player {
       commands.spawn((
         Bullet { damage },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
-        Transform::from_translation(start),
+        transform,
         Velocity(velocity),
         Player,
       ));
@@ -86,7 +91,7 @@ fn do_shooting(
         Bullet { damage },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
-        Transform::from_translation(start),
+        transform,
         Velocity(velocity),
       ));
     }

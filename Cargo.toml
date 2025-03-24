@@ -8,9 +8,12 @@ description = "The Claw 2 - electric boogaloo"
 [dependencies]
 bevy =  "0.15.3"
 rand = "0.8.5"
+bevy_common_assets =  { version = "0.12.0", features = ["json"] }
+serde_json = { version = "1", optional = true }
+serde = { version = "1" }
 
 [lib]
-name = "claw2_lib"
+name = "claw2"
 path = "src/lib.rs"
 crate-type = [
     "staticlib",

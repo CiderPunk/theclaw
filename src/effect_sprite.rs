@@ -6,7 +6,7 @@ use bevy::{
 };
 use rand::Rng;
 
-use crate::{movement::Velocity, scheduling::GameSchedule};
+use crate::{asset_loader::AssetsLoading, movement::Velocity, scheduling::GameSchedule};
 
 const EFFECT_SPRITE_SHADER_PATH: &str = "shaders/animated_uv_shader_v2.wgsl";
 
@@ -86,11 +86,15 @@ fn init_effect_sprites(
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<EffectSpriteMaterial>>,
   asset_server: Res<AssetServer>,
+  mut loading:ResMut<AssetsLoading>,
 ) {
   let quad = meshes.add(Rectangle::new(8.0, 8.0));
   commands.insert_resource(EffectQuad(quad));
   let splosion_texture: Handle<Image> = asset_server.load("sprites/splosion.png");
   let ricochet_texture: Handle<Image> = asset_server.load("sprites/ricochet.png");
+    
+  loading.0.push(splosion_texture.clone().untyped());
+  loading.0.push(ricochet_texture.clone().untyped());
 
   let splosion_material_collection = create_material_collection::<SPLOSION_FRAMES>(
     &mut materials,
