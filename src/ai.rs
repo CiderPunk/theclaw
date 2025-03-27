@@ -85,7 +85,7 @@ fn parse_configs(
    
       //new ai data!
       let mut ai_data = AiData::default();
-      
+
       //get path as the name maybe...
       if let Some(path) = asset_server.get_path(handle.id()){
         ai_data.name = path.to_string();
@@ -116,6 +116,7 @@ fn build_action(action_config: &ActionConfig) -> Action {
         Action::Idle => {},
         Action::SineWave { mut period, mut offset } =>  { 
           period = action_config.period.unwrap_or(20.0); 
+          offset = action_config.offset.unwrap_or(0.0);
         },
         Action::Turn { mut time } => { 
           time = action_config.turn_time.unwrap_or(1.2); 
@@ -160,6 +161,7 @@ struct ActionConfig{
   action_name:String,
   turn_time:Option<f32>,
   period:Option<f32>,
+  offset:Option<f32>,
 }
 
 #[derive(serde::Deserialize)]
