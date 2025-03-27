@@ -1,8 +1,15 @@
 {
   "actions":[
     {
-      "name":"Idle"
+      "name":"Idle",
+      "action_name":"Idle"
+    },
+    {
+      "name":"Wave",
+      "action_name":"SineWave",
+      "period":1.2
     }
+  
   ],
   "behaviour":[
     {
