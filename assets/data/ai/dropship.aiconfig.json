@@ -1,4 +1,5 @@
 {
+  "name":"Dropship",
   "actions":[
     {
       "name":"Idle",
@@ -8,6 +9,11 @@
       "name":"Wave",
       "action_name":"SineWave",
       "period":1.2
+    },
+    {
+      "name":"Turn",
+      "action_name":"Turn",
+      "turm_time":1.2
     }
   
   ],

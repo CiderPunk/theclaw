@@ -26,12 +26,13 @@ enum Action{
   Idle,
   SineWave{
     period:f32,
+    offset:f32,
   }, 
   Turn{
     time:f32,
   },
   Home{
-    max_speed:f32,
+    acceleration:f32,
   }
 }
 
@@ -74,15 +75,21 @@ fn load_configs(
 
 fn parse_configs(
   mut commands:Commands,
+  asset_server:Res<AssetServer>,
   ai_configs:Res<AiConfigCollection>,
   mut ai_data_collection:ResMut<AiDataCollection>,
   config_assets:Res<Assets<AiConfig>>,
 ){
   for handle in ai_configs.0.iter(){
     if let Some(config) = config_assets.get(handle.id()){
+   
       //new ai data!
       let mut ai_data = AiData::default();
-
+      
+      //get path as the name maybe...
+      if let Some(path) = asset_server.get_path(handle.id()){
+        ai_data.name = path.to_string();
+      }
       //build hashmap of indexes
       for (index, action_config) in config.actions.iter().enumerate(){
         ai_data.action_indexes.insert(action_config.name.clone(), index);
@@ -106,11 +113,16 @@ fn build_action(action_config: &ActionConfig) -> Action {
 
   if let Ok(result) = Action::from_str(action_config.action_name.as_str()){
     match (result) {
-        Action::Idle => Action::Idle,
-        Action::SineWave { period: _ } =>  Action::SineWave { period:1.1 },
-        Action::Turn { time: _ } => Action::Turn { time: 1.2 },
-        Action::Home { max_speed: _ } => Action::Home { max_speed: 20.0 },
+        Action::Idle => {},
+        Action::SineWave { mut period, mut offset } =>  { 
+          period = action_config.period.unwrap_or(20.0); 
+        },
+        Action::Turn { mut time } => { 
+          time = action_config.turn_time.unwrap_or(1.2); 
+        },
+        Action::Home { mut acceleration } => {},
     }
+    result
   }
   else{
     panic!("failed parsing action {:?}",action_config.action_name);
@@ -123,10 +135,10 @@ pub struct AiDataCollection(Vec<AiData>);
 
 #[derive(Resource, Default)]
 pub struct AiData{
+  name:String,
   behaviour_indexes:HashMap<String, usize>,
   action_indexes:HashMap<String, usize>,
   actions:Vec<Action>,
-
 }   
 
 
@@ -137,6 +149,7 @@ pub struct AiConfigCollection(Vec<Handle<AiConfig>>);
 
 #[derive(serde::Deserialize, Asset, TypePath)]
 struct AiConfig {
+  name: String,
   actions: Vec<ActionConfig>,
   behaviour:Vec<BehaviourConfig>,
 }
@@ -145,6 +158,8 @@ struct AiConfig {
 struct ActionConfig{
   name:String,
   action_name:String,
+  turn_time:Option<f32>,
+  period:Option<f32>,
 }
 
 #[derive(serde::Deserialize)]
