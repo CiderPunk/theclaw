@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{prelude::*, text::cosmic_text::rustybuzz::script::NEWA, utils::HashMap};
 use bevy_common_assets::json::JsonAssetPlugin;
 use strum_macros::EnumString;
 
@@ -16,23 +16,6 @@ impl Plugin for AiPlugin{
       .add_systems(OnExit(GameState::Loading), parse_configs);
     //app
     //.init_resource::<BehaviourCollection>();
-  }
-}
-
-
-
-#[derive(EnumString, PartialEq)]
-enum Action{
-  Idle,
-  SineWave{
-    period:f32,
-    offset:f32,
-  }, 
-  Turn{
-    time:f32,
-  },
-  Home{
-    acceleration:f32,
   }
 }
 
@@ -67,7 +50,7 @@ fn load_configs(
     let config:Handle<AiConfig> = asset_server.load(path);
     loading.0.push(config.clone().untyped());
     index = Some(i);
-    ai_configs.0.push(config);
+    ai_configs.0.push((name.clone(),config));
   }
   commands.insert_resource(ai_configs);
 }
@@ -75,21 +58,17 @@ fn load_configs(
 
 fn parse_configs(
   mut commands:Commands,
-  asset_server:Res<AssetServer>,
   ai_configs:Res<AiConfigCollection>,
   mut ai_data_collection:ResMut<AiDataCollection>,
   config_assets:Res<Assets<AiConfig>>,
 ){
-  for handle in ai_configs.0.iter(){
+  for (name, handle) in ai_configs.0.iter(){
     if let Some(config) = config_assets.get(handle.id()){
    
       //new ai data!
       let mut ai_data = AiData::default();
+      ai_data.name = name.clone();
 
-      //get path as the name maybe...
-      if let Some(path) = asset_server.get_path(handle.id()){
-        ai_data.name = path.to_string();
-      }
       //build hashmap of indexes
       for (index, action_config) in config.actions.iter().enumerate(){
         ai_data.action_indexes.insert(action_config.name.clone(), index);
@@ -100,6 +79,10 @@ fn parse_configs(
         ai_data.action_indexes.insert(behaviour.name.clone(), index);
         info!(behaviour.name);
       }
+      for (index, behaviour) in config.behaviour.iter().enumerate(){
+        ai_data.behaviours.push(build_behaviour(&ai_data.action_indexes, &ai_data.behaviour_indexes, behaviour));
+        info!(behaviour.name);
+      }
 
       //store our new data
       ai_data_collection.0.push(ai_data); 
@@ -108,6 +91,24 @@ fn parse_configs(
   //dont need the configs anymore
   commands.remove_resource::<AiConfigCollection>();
 }
+
+fn build_behaviour(action_indexes: &HashMap<String, usize>, behaviour_indexes: &HashMap<String, usize>, behaviour: &BehaviourConfig) -> Behaviour {
+  
+  let Some(action_index) = behaviour_indexes.get(&behaviour.action) else{
+    panic!("Behaviour not found: {:?}", behaviour.action);
+  };
+  
+  let mut behaviour = Behaviour { 
+    first_eval: behaviour.first_eval,
+    action: *action_index,
+    criteria: Vec::<EvaluationCriteria>::new(),
+    options: Vec::<BehaviourOption>::new(),
+  };
+
+  behaviour
+}
+
+
 
 fn build_action(action_config: &ActionConfig) -> Action {
 
@@ -131,6 +132,51 @@ fn build_action(action_config: &ActionConfig) -> Action {
 }
 
 
+#[derive(EnumString, PartialEq)]
+enum Action{
+  Idle,
+  SineWave{
+    period:f32,
+    offset:f32,
+  }, 
+  Turn{
+    time:f32,
+  },
+  Home{
+    acceleration:f32,
+  }
+}
+
+
+#[derive(EnumString, PartialEq)]
+enum Criteria{
+  Value,
+  Random,
+}
+
+struct EvaluationCriteria{
+  criteria:Criteria,
+  weight:f32,
+  offset:f32,
+}
+
+
+struct BehaviourOption{
+  behaviour_index:usize,
+  high:f32,
+  low:f32,
+}
+
+
+
+struct Behaviour{
+  first_eval:f32,
+  action:usize,
+  criteria:Vec<EvaluationCriteria>,
+  options:Vec<BehaviourOption>,
+}
+
+
 #[derive(Resource, Default)]
 pub struct AiDataCollection(Vec<AiData>);
 
@@ -140,17 +186,17 @@ pub struct AiData{
   behaviour_indexes:HashMap<String, usize>,
   action_indexes:HashMap<String, usize>,
   actions:Vec<Action>,
+  behaviours:Vec<Behaviour>,
 }   
 
 
 
 #[derive(Resource, Default)]
-pub struct AiConfigCollection(Vec<Handle<AiConfig>>);
+pub struct AiConfigCollection(Vec<(String, Handle<AiConfig>)>);
 
 
 #[derive(serde::Deserialize, Asset, TypePath)]
 struct AiConfig {
-  name: String,
   actions: Vec<ActionConfig>,
   behaviour:Vec<BehaviourConfig>,
 }
@@ -167,7 +213,27 @@ struct ActionConfig{
 #[derive(serde::Deserialize)]
 struct BehaviourConfig{
   name:String,
+  action:String,
+  first_eval:f32,
+  criteria:Vec<CriteriaConfig>,
+  choices:Vec<ChoiceConfig>,
 }
+
+#[derive(serde::Deserialize)]
+pub struct CriteriaConfig{
+  criteria:String,
+  weight:Option<f32>,
+  offset:Option<f32>,
+}
+
+
+#[derive(serde::Deserialize)]
+struct ChoiceConfig{
+  behaviour:String,
+  high:Option<f32>,
+  low:Option<f32>,
+}
+
 
 #[derive(Component)]
 pub struct Ai{

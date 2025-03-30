@@ -1,14 +1,12 @@
 {
-  "name":"Dropship",
   "actions":[
     {
-      "name":"Idle",
+      "name":"descend",
       "action_name":"Idle"
     },
     {
-      "name":"Wave",
-      "action_name":"SineWave",
-      "period":1.2
+      "name":"target track",
+      "action_name":"EvaluateTarget"
     },
     {
       "name":"Turn",
@@ -19,7 +17,16 @@
   ],
   "behaviour":[
     {
-      "name":"initial"
+      "name":"start",
+      "action":"descend",
+      "time":1.0,
+      "choices":[
+        {
+          "behaviour":"target_track"
+        }
+
+      ]
+
     },
     {
       "name":"attack run"
