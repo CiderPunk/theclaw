@@ -1,35 +1,8 @@
 {
   "actions":[
-    {
-      "name":"descend",
-      "action_name":"Idle"
-    },
-    {
-      "name":"target track",
-      "action_name":"EvaluateTarget"
-    },
-    {
-      "name":"Turn",
-      "action_name":"Turn",
-      "turm_time":1.2
-    }
-  
+   
   ],
   "behaviour":[
-    {
-      "name":"start",
-      "action":"descend",
-      "time":1.0,
-      "choices":[
-        {
-          "behaviour":"target_track"
-        }
-
-      ]
-
-    },
-    {
-      "name":"attack run"
-    }
+   
   ]
 }

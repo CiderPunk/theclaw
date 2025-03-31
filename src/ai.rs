@@ -94,18 +94,49 @@ fn parse_configs(
 
 fn build_behaviour(action_indexes: &HashMap<String, usize>, behaviour_indexes: &HashMap<String, usize>, behaviour: &BehaviourConfig) -> Behaviour {
   
-  let Some(action_index) = behaviour_indexes.get(&behaviour.action) else{
-    panic!("Behaviour not found: {:?}", behaviour.action);
+  let Some(action_index) = action_indexes.get(&behaviour.action) else{
+    panic!("Action not found: {:?}", behaviour.action);
   };
   
   let mut behaviour = Behaviour { 
     first_eval: behaviour.first_eval,
     action: *action_index,
-    criteria: Vec::<EvaluationCriteria>::new(),
-    options: Vec::<BehaviourOption>::new(),
+    criteria: build_criteria(behaviour),
+    options: build_options(behaviour, behaviour_indexes),
   };
-
   behaviour
+}
+
+fn build_options(
+  behaviour_config: &BehaviourConfig,
+  behaviour_indexes: &HashMap<String, usize>
+) -> Vec<BehaviourOption> {
+  behaviour_config.options.iter().map(|option_config| {
+    let Some(behaviour_index) = behaviour_indexes.get(&option_config.behaviour) else{
+      panic!("Behaviour not found: {:?}", option_config.behaviour);
+    };
+    BehaviourOption{
+      behaviour_index: *behaviour_index,
+      high:option_config.high.unwrap_or(f32::MAX),
+      low:option_config.low.unwrap_or(f32::MIN),
+    }
+  }).collect::<Vec<BehaviourOption>>()
+
+}
+
+fn build_criteria(behaviour: &BehaviourConfig) -> Vec<EvaluationCriteria> {
+  behaviour.criteria.iter().map(|criteria_config|{
+    if let Ok(result) = Criteria::from_str(criteria_config.criteria.as_str()){
+      EvaluationCriteria{ 
+        criteria: result,
+        offset:criteria_config.offset.unwrap_or(0.), 
+        weight:criteria_config.weight.unwrap_or(1.),
+      }
+    }
+    else{
+      panic!("failed parsing criteria {:?}",criteria_config.criteria);
+    }
+  }).collect::<Vec<EvaluationCriteria>>()
 }
 
 
@@ -216,7 +247,7 @@ struct BehaviourConfig{
   action:String,
   first_eval:f32,
   criteria:Vec<CriteriaConfig>,
-  choices:Vec<ChoiceConfig>,
+  options:Vec<OptionConfig>,
 }
 
 #[derive(serde::Deserialize)]
@@ -228,7 +259,7 @@ pub struct CriteriaConfig{
 
 
 #[derive(serde::Deserialize)]
-struct ChoiceConfig{
+struct OptionConfig{
   behaviour:String,
   high:Option<f32>,
   low:Option<f32>,
