@@ -22,6 +22,7 @@ mod health_bars;
 mod effect_sprite;
 mod ai;
 mod dropship;
+mod mine;
 
 use ai::AiPlugin;
 use asset_loader::AssetLoaderPlugin;
@@ -42,6 +43,7 @@ use hit_marker::HitMarkerPlugin;
 use hook::HookPlugin;
 
 use input::GameInputPlugin;
+use mine::MinePlugin;
 use movement::MovementPlugin;
 use scheduling::SchedulingPlugin;
 use ship::ShipPlugin;
@@ -106,6 +108,7 @@ pub fn run_game() {
       HealthBarsPlugin,
       AiPlugin,
       DropshipPlugin,
+      MinePlugin,
     ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
