@@ -102,9 +102,8 @@ fn spawn_wrecks(
         Transform::from_translation(*translation).with_rotation(*quat),
         Velocity(*velocity),
         Wreck::new(*time_to_live, *blast_size),
-        Roller {
-          roll_speed: *roll_speed,
-        },
+
+        Roller::new(*roll_speed, 0., 0.),
         Acceleration::new(GRAVITY, 0.0, 40.),
       ))
       .id();

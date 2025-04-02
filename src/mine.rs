@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{ai::AiRegister, asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, enemy::{Enemy, ENEMY_START_POINT_X, ENEMY_START_POINT_Z_BOUNDS_MAX}, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::Hookable, movement::Velocity, scheduling::GameSchedule};
+use crate::{ai::AiRegister, asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, enemy::{Enemy, ENEMY_START_POINT_X, ENEMY_START_POINT_Z_BOUNDS_MAX}, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::Hookable, movement::{Roller, Velocity}, scheduling::GameSchedule};
 
 
 const MINE_SPAWN_TIME_SECONDS: f32 = 3.0;
@@ -19,7 +19,7 @@ pub struct MinePlugin;
 impl Plugin for MinePlugin{
   fn build(&self, app: &mut App) {
     app.add_systems(PreStartup, register_ai)
-    .add_systems(Update, (spawn_mine, spin_mines).in_set(GameSchedule::EntityUpdates))
+    .add_systems(Update, (spawn_mine ).in_set(GameSchedule::EntityUpdates))
     .add_systems(Update, check_dead.in_set(GameSchedule::DespawnEntities));
   }
 }
@@ -43,11 +43,6 @@ fn default() -> Self {
 #[require(Enemy, BoundsDespawn, Hookable, HitMarker)]
 struct Mine;
 
-fn spin_mines(mut query:Query<&mut Transform, With<Mine>>, time:Res<Time> ){
-  for (mut transform) in query.iter_mut() {
-    transform.rotate_local_z(MINE_SPIN_SPEED * time.delta_secs());
-  }
-}
 
 
 fn spawn_mine(
@@ -81,6 +76,7 @@ commands.spawn((
       Quat::from_rotation_z(MINE_HOOK_ROTATION),
     ),
     Health::new(MINE_HEALTH),
+    Roller::new(0.2, 0.1, MINE_SPIN_SPEED),
   ));
 }
 

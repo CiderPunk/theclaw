@@ -177,8 +177,6 @@ fn spawn_sidewinder(
       Quat::from_rotation_z(SIDEWINDER_HOOK_ROTATION),
     ),
     Health::new(SIDEWINDER_HEALTH),
-    Roller {
-      roll_speed: SIDEWINDER_SPIN_SPEED,
-    },
+    Roller::new(SIDEWINDER_SPIN_SPEED, 0.,0.),
   ));
 }
