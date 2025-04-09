@@ -14,9 +14,11 @@ pub struct SceneAssets {
   pub sidewinder: Handle<Scene>,
   pub dropship: Handle<Scene>,
   pub hook: Handle<Scene>,
+  pub mine: Handle<Scene>,
   pub bullet: Handle<Mesh>,
   pub bullet_material: Handle<StandardMaterial>,
   pub font: Handle<Font>,
+
 }
 
 #[derive(Resource)]
@@ -88,6 +90,7 @@ fn extract_assets(
     sidewinder: gltf.named_scenes["Sidewinder"].clone(),
     dropship: gltf.named_scenes["dropship"].clone(),
     hook: gltf.named_scenes["Claw"].clone(),
+    mine: gltf.named_scenes["Mine"].clone(),
     bullet: meshes.add(
       Sphere::new(BULLET_SIZE)
         .mesh()

@@ -112,7 +112,7 @@ fn spawn_wrecks(
     commands.spawn(observer);
 
     ev_splosion_writer.send(EffectSpriteEvent::new(
-      *translation + Vec3::new(0., 0., -2.0),
+      *translation + Vec3::new(0., -0.5, 0.),
       *blast_size,
       *velocity,
       EffectSpriteType::Splosion,
