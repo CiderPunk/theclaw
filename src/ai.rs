@@ -4,7 +4,7 @@ use bevy::{prelude::*, text::cosmic_text::rustybuzz::script::NEWA, utils::HashMa
 use bevy_common_assets::json::JsonAssetPlugin;
 use strum_macros::EnumString;
 
-use crate::{asset_loader::AssetsLoading, state::GameState};
+use crate::{asset_loader::AssetsLoading, scheduling::GameSchedule, state::GameState};
 pub struct AiPlugin;
 
 impl Plugin for AiPlugin{
@@ -13,12 +13,42 @@ impl Plugin for AiPlugin{
       .add_plugins(JsonAssetPlugin::<AiConfig>::new(&["aiconfig.json"]),)
       .init_resource::<AiDataCollection>()
       .add_systems(Startup, load_configs)
-      .add_systems(OnExit(GameState::Loading), parse_configs);
+      .add_systems(OnExit(GameState::Loading), parse_configs)
+      .add_systems(Update, do_action.in_set(GameSchedule::EntityUpdates));
+
+
     //app
     //.init_resource::<BehaviourCollection>();
   }
 }
 
+struct ActionHandle{
+  data_ix:usize,
+  action_ix:usize
+}
+
+struct BehaviourHandle{
+  data_ix:usize,
+  behaviour_ix:usize
+}
+
+#[derive(Component)]
+pub struct Ai{
+  action_timer:Timer,
+  target:Option<Entity>,
+}
+
+
+
+fn do_action(mut query:Query<&mut Ai>, time:Res<Time>){
+  for mut ai in query.iter_mut(){
+    ai.action_timer.tick(time.delta());
+    if ai.action_timer.just_finished(){
+
+
+    }
+  }
+}
 
 
 #[derive(Component)]
@@ -142,7 +172,6 @@ fn build_criteria(behaviour: &BehaviourConfig) -> Vec<EvaluationCriteria> {
 
 
 fn build_action(action_config: &ActionConfig) -> Action {
-
   if let Ok(result) = Action::from_str(action_config.action_name.as_str()){
     match (result) {
         Action::Idle => {},
@@ -153,7 +182,16 @@ fn build_action(action_config: &ActionConfig) -> Action {
         Action::Turn { mut time } => { 
           time = action_config.turn_time.unwrap_or(1.2); 
         },
-        Action::Home { mut acceleration } => {},
+        Action::Home { mut acceleration, mut max_speed } => { 
+          acceleration = action_config.acceleration.unwrap_or(10.0);
+          max_speed = action_config.max_speed.unwrap_or(20.0);
+        },
+        Action::Drift { mut variance, mut trend } =>{
+          let variance_config = action_config.variance.unwrap_or((1.0,1.0));
+          let trend_config = action_config.variance.unwrap_or((0.,0.));
+          variance = Vec3::new(variance_config.0, 0., variance_config.1);
+          trend = Vec3::new(trend_config.0, 0., trend_config.1);
+        }
     }
     result
   }
@@ -161,6 +199,7 @@ fn build_action(action_config: &ActionConfig) -> Action {
     panic!("failed parsing action {:?}",action_config.action_name);
   }
 }
+
 
 
 #[derive(EnumString, PartialEq)]
@@ -174,7 +213,12 @@ enum Action{
     time:f32,
   },
   Home{
+    max_speed:f32,
     acceleration:f32,
+  },
+  Drift{
+    variance:Vec3,
+    trend:Vec3,
   }
 }
 
@@ -234,11 +278,16 @@ struct AiConfig {
 
 #[derive(serde::Deserialize)]
 struct ActionConfig{
+  
   name:String,
   action_name:String,
+  acceleration:Option<f32>,
+  max_speed:Option<f32>,
   turn_time:Option<f32>,
   period:Option<f32>,
   offset:Option<f32>,
+  variance:Option<(f32,f32)>,
+  trend:Option<(f32,f32)>
 }
 
 #[derive(serde::Deserialize)]
@@ -266,8 +315,3 @@ struct OptionConfig{
 }
 
 
-#[derive(Component)]
-pub struct Ai{
-  next_think:Timer,
-  target:Entity,
-}
