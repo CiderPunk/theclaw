@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::ai::AiRegister;
+
 
 pub struct DropshipPlugin;
 
@@ -16,5 +16,5 @@ pub struct DropShip{
 }
 
 fn register_ai(mut commands:Commands){
-  commands.spawn( AiRegister::new("dropship"));
+  //commands.spawn( AiRegister::new("dropship"));
 }

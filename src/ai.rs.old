@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use bevy::{prelude::*, text::cosmic_text::rustybuzz::script::NEWA, utils::HashMap};
+use bevy::{prelude::*, utils::HashMap};
 use bevy_common_assets::json::JsonAssetPlugin;
 use strum_macros::EnumString;
 
@@ -16,18 +16,17 @@ impl Plugin for AiPlugin{
       .add_systems(OnExit(GameState::Loading), parse_configs)
       .add_systems(Update, do_action.in_set(GameSchedule::EntityUpdates));
 
-
     //app
     //.init_resource::<BehaviourCollection>();
   }
 }
 
-struct ActionHandle{
+pub struct ActionHandle{
   data_ix:usize,
   action_ix:usize
 }
 
-struct BehaviourHandle{
+pub struct BehaviourHandle{
   data_ix:usize,
   behaviour_ix:usize
 }
@@ -35,21 +34,45 @@ struct BehaviourHandle{
 #[derive(Component)]
 pub struct Ai{
   action_timer:Timer,
+  behaviour_timer:Timer,
   target:Option<Entity>,
+  action:Option<ActionHandle>,
+  behaviour:BehaviourHandle,
 }
 
+impl Ai{
+  pub fn new(behaviour:BehaviourHandle, target:Option<Entity>)->Self{
+    Self{ 
+      action_timer:Timer::from_seconds(0., TimerMode::Repeating),
+      behaviour_timer:Timer::from_seconds(0.,TimerMode::Repeating),
+      behaviour,
+      target,
+      action:None,
+    } 
+  }
+}
 
-
-fn do_action(mut query:Query<&mut Ai>, time:Res<Time>){
+/*
+fn do_action(mut query:Query<&mut Ai>, time:Res<Time>, ai_data:Res<AiDataCollection>){
   for mut ai in query.iter_mut(){
+    let action_handle = ai.action.unwrap_or_else(||->ActionHandle
+      {
+        let behaviour = ai_data.get_behaviour(&ai.behaviour);
+        ai.action = Some(behaviour.action_handle);
+        behaviour.action_handle
+      }
+    );
+
     ai.action_timer.tick(time.delta());
     if ai.action_timer.just_finished(){
+    //  let action = ai_data.get_action(action_handle);
+
 
 
     }
   }
 }
-
+ */
 
 #[derive(Component)]
 pub struct AiRegister{
@@ -92,61 +115,61 @@ fn parse_configs(
   mut ai_data_collection:ResMut<AiDataCollection>,
   config_assets:Res<Assets<AiConfig>>,
 ){
-  for (name, handle) in ai_configs.0.iter(){
+  for (index, (name, handle)) in ai_configs.0.iter().enumerate(){
     if let Some(config) = config_assets.get(handle.id()){
-   
+
+      ai_data_collection.index.insert(name.clone(), index);
+
       //new ai data!
       let mut ai_data = AiData::default();
       ai_data.name = name.clone();
+      ai_data.index = index;
 
       //build hashmap of indexes
       for (index, action_config) in config.actions.iter().enumerate(){
         ai_data.action_indexes.insert(action_config.name.clone(), index);
         ai_data.actions.push(build_action(action_config));
-        info!(action_config.name);
+        //info!(action_config.name);
       }
       for (index, behaviour) in config.behaviour.iter().enumerate(){
         ai_data.action_indexes.insert(behaviour.name.clone(), index);
-        info!(behaviour.name);
+        //info!(behaviour.name);
       }
       for (index, behaviour) in config.behaviour.iter().enumerate(){
-        ai_data.behaviours.push(build_behaviour(&ai_data.action_indexes, &ai_data.behaviour_indexes, behaviour));
-        info!(behaviour.name);
+        let behaviour = build_behaviour(&ai_data, behaviour);
+        if behaviour.start{
+          ai_data.default_behaviour = index;
+        }
+        ai_data.behaviours.push(behaviour);
+        //info!(behaviour.name);
       }
-
       //store our new data
-      ai_data_collection.0.push(ai_data); 
+      ai_data_collection.data.push(ai_data); 
     }
   }
   //dont need the configs anymore
   commands.remove_resource::<AiConfigCollection>();
 }
 
-fn build_behaviour(action_indexes: &HashMap<String, usize>, behaviour_indexes: &HashMap<String, usize>, behaviour: &BehaviourConfig) -> Behaviour {
-  
-  let Some(action_index) = action_indexes.get(&behaviour.action) else{
-    panic!("Action not found: {:?}", behaviour.action);
-  };
-  
-  let mut behaviour = Behaviour { 
+fn build_behaviour(data:&AiData, behaviour: &BehaviourConfig) -> Behaviour {
+  let action_handle = data.get_action_handle(&behaviour.action);
+  Behaviour { 
     first_eval: behaviour.first_eval,
-    action: *action_index,
+    action_handle:action_handle,
     criteria: build_criteria(behaviour),
-    options: build_options(behaviour, behaviour_indexes),
-  };
-  behaviour
+    options: build_options(behaviour, data),
+    start: behaviour.default.unwrap_or(false),
+  }
 }
 
 fn build_options(
   behaviour_config: &BehaviourConfig,
-  behaviour_indexes: &HashMap<String, usize>
+  data:&AiData,
 ) -> Vec<BehaviourOption> {
   behaviour_config.options.iter().map(|option_config| {
-    let Some(behaviour_index) = behaviour_indexes.get(&option_config.behaviour) else{
-      panic!("Behaviour not found: {:?}", option_config.behaviour);
-    };
+    let behaviour_handle = data.get_behaviour_handle(&option_config.behaviour);
     BehaviourOption{
-      behaviour_index: *behaviour_index,
+      behaviour_handle: behaviour_handle,
       high:option_config.high.unwrap_or(f32::MAX),
       low:option_config.low.unwrap_or(f32::MIN),
     }
@@ -237,7 +260,7 @@ struct EvaluationCriteria{
 
 
 struct BehaviourOption{
-  behaviour_index:usize,
+  behaviour_handle:BehaviourHandle,
   high:f32,
   low:f32,
 }
@@ -246,25 +269,81 @@ struct BehaviourOption{
 
 struct Behaviour{
   first_eval:f32,
-  action:usize,
+  action_handle:ActionHandle,
   criteria:Vec<EvaluationCriteria>,
   options:Vec<BehaviourOption>,
+  start:bool,
+
 }
 
 
 #[derive(Resource, Default)]
-pub struct AiDataCollection(Vec<AiData>);
+pub struct AiDataCollection{
+  data:Vec<AiData>,
+  index:HashMap<String, usize>,
+}
+
+
+impl AiDataCollection{
+  pub fn get_behaviour_handle(&self, data_name:&String, behaviour_nane:&String)->BehaviourHandle{
+    if let Some(data_ix) = self.index.get(data_name){
+      if let Some(data) = self.data.get(*data_ix){
+        return data.get_behaviour_handle(behaviour_nane);
+      }
+    }
+    panic!("Failed finding behaviour {:?}:{:?}", data_name, behaviour_nane);
+  }
+  fn get_behaviour(&self, handle:&BehaviourHandle) -> &Behaviour{
+    let data = self.data.get(handle.data_ix).expect("Failed retrieving behaviour by handle: missing data");
+    return data.behaviours.get(handle.behaviour_ix).expect("Failed getting behaviour by handle: missing behaviour");
+  }
+  fn get_action(&self, handle:&ActionHandle) -> &Action{  
+    let data = self.data.get(handle.data_ix).expect("Failed retrieving action by handle: missing data");
+    return data.actions.get(handle.action_ix).expect("Failed getting action by handle: missing action");
+  }
+
+  fn get_default_behaviour_handle(&self, data_name:&String)->BehaviourHandle{
+    if let Some(data_ix) = self.index.get(data_name){
+      if let Some(data) = self.data.get(*data_ix){
+        return data.get_default_behaviour_handle();
+      }
+    }
+    panic!("Failed finding default behaviour {:?}", data_name);
+  }
+}
+
+
+
 
 #[derive(Resource, Default)]
 pub struct AiData{
+  index:usize, 
   name:String,
   behaviour_indexes:HashMap<String, usize>,
   action_indexes:HashMap<String, usize>,
   actions:Vec<Action>,
   behaviours:Vec<Behaviour>,
+  default_behaviour:usize,
 }   
 
-
+impl AiData{
+  pub fn get_behaviour_handle(&self, behaviour_nane:&String)->BehaviourHandle{
+    if let Some(behaviour_ix) = self.behaviour_indexes.get(behaviour_nane){
+      return BehaviourHandle{ data_ix: self.index, behaviour_ix:*behaviour_ix };
+    }
+    panic!("Failed finding behaviour {:?}:{:?}",self.name, behaviour_nane);
+  }
+  pub fn get_action_handle(&self, action_name:&String)->ActionHandle{
+    if let Some(action_ix) = self.behaviour_indexes.get(action_name){
+      return ActionHandle{ data_ix: self.index, action_ix:*action_ix };
+    }
+    panic!("Failed finding action {:?}:{:?}",self.name, action_name);
+  }
+  
+  pub fn get_default_behaviour_handle(&self) -> BehaviourHandle {
+    return BehaviourHandle{ data_ix: self.index, behaviour_ix:self.default_behaviour };
+  }
+}
 
 #[derive(Resource, Default)]
 pub struct AiConfigCollection(Vec<(String, Handle<AiConfig>)>);
@@ -295,6 +374,7 @@ struct BehaviourConfig{
   name:String,
   action:String,
   first_eval:f32,
+  default:Option<bool>,
   criteria:Vec<CriteriaConfig>,
   options:Vec<OptionConfig>,
 }

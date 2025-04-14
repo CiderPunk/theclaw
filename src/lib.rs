@@ -20,11 +20,11 @@ mod wreck;
 mod game_ui;
 mod health_bars;
 mod effect_sprite;
-mod ai;
+
 mod dropship;
 mod mine;
+mod actions;
 
-use ai::AiPlugin;
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, core::FrameCount, prelude::*, window::WindowCloseRequested};
 use bounds_check::BoundsCheckPlugin;
@@ -106,7 +106,7 @@ pub fn run_game() {
       HitMarkerPlugin,
       GameUiPlugin,
       HealthBarsPlugin,
-      AiPlugin,
+      //AiPlugin,
       DropshipPlugin,
       MinePlugin,
     ))
