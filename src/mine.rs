@@ -85,7 +85,7 @@ fn check_dead(
   for (entity, health, transform, velocity) in query.iter() {
     if health.value <= 0. {
       info!("dead {:?}", entity);
-      ev_splosion_writer.send( 
+      ev_splosion_writer.write( 
         EffectSpriteEvent::new(  
         transform.translation() + Vec3::new(0., 0., 0.),
         3.0,
@@ -94,8 +94,8 @@ fn check_dead(
       ));
       
 
-      commands.entity(entity).despawn_recursive();
-      ev_point_writer.send(PointEvent(MINE_POINTS));
+      commands.entity(entity).despawn();
+      ev_point_writer.write(PointEvent(MINE_POINTS));
     }
   }
 }

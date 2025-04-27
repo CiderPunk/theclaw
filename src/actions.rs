@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::scheduling::GameSchedule;
+use crate::{movement::{Acceleration, Velocity}, scheduling::GameSchedule};
 
 pub struct ActionPlugin;
 
@@ -11,21 +11,20 @@ impl Plugin for ActionPlugin{
 }
 
 
-fn do_drift(query:Query<Actions::Drift>){
 
-
-  
-}
 
 #[derive(Component)]
-enum Actions{
-  Home{
-    max_speed:f32,
-    acceleration:f32,
-  },
-  Drift{
-    variance:Vec3,
-    trend:Vec3,
+#[require(Acceleration, Velocity)]
+pub struct Drift{
+  variance:Vec3,
+  trend:Vec3,
+  update_timer:Timer,
+}
+
+fn do_drift(mut query:Query<(&mut Drift, &mut Acceleration)>){
+  for (drift, acceleration) in query.iter_mut(){
+
+
   }
 }
 
