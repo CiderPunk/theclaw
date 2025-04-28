@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::{math::VectorSpace, prelude::*};
 use rand::Rng;
 
-use crate::{asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, enemy::{Enemy, ENEMY_START_POINT_X, ENEMY_START_POINT_Z_BOUNDS_MAX}, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::Hookable, movement::{Roller, Velocity}, scheduling::GameSchedule};
+use crate::{actions::Drift, asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, enemy::{Enemy, ENEMY_START_POINT_X, ENEMY_START_POINT_Z_BOUNDS_MAX}, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::Hookable, movement::{Acceleration, Roller, Velocity}, scheduling::GameSchedule};
 
 
 const MINE_SPAWN_TIME_SECONDS: f32 = 3.0;
@@ -73,6 +73,8 @@ commands.spawn((
     ),
     Health::new(MINE_HEALTH),
     Roller::new(0.2, 0.1, MINE_SPIN_SPEED),
+    Drift::new(Vec3::new(0.5, 0., 0.2), Vec3::new(0., 0., -0.5), 0.2),
+    Acceleration::new(Vec3::ZERO, 0., 100.)
   ));
 }
 

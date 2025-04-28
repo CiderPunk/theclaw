@@ -25,6 +25,7 @@ mod dropship;
 mod mine;
 mod actions;
 
+use actions::ActionPlugin;
 use asset_loader::AssetLoaderPlugin;
 use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowCloseRequested};
 use bounds_check::BoundsCheckPlugin;
@@ -50,6 +51,8 @@ use ship::ShipPlugin;
 use sidewinder::SidewinderPlugin;
 use state::{GameState, GameStateEvent, StatePlugin};
 use wreck::WreckPlugin;
+
+
 
 const APP_NAME: &str = "The Claw 2";
 
@@ -111,6 +114,7 @@ pub fn run_game() {
       //AiPlugin,
       DropshipPlugin,
       MinePlugin,
+      ActionPlugin,
     ))
     //.add_systems(Update, make_visible.run_if(in_state(GameState::Loading)))
     .add_systems(PreUpdate, check_window)
