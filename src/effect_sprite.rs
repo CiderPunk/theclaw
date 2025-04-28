@@ -211,7 +211,7 @@ fn update_effect_sprites(
   for (entity, mut sprite) in &mut query {
     sprite.timer.tick(time.delta());
     if sprite.timer.just_finished() {
-      commands.entity(entity).despawn_recursive();
+      commands.entity(entity).despawn();
     }
   }
 }

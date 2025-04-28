@@ -66,7 +66,7 @@ fn update_wrecks(
     wreck.time_to_live.tick(time.delta());
 
     if wreck.time_to_blast.just_finished() {
-      ev_splosion_writer.send(EffectSpriteEvent::new(
+      ev_splosion_writer.write(EffectSpriteEvent::new(
         transform.translation() + Vec3::new(0., wreck.time_to_live.fraction_remaining() * 2.0, 0.0),
         wreck.blast_size * wreck.time_to_live.fraction(),
         velocity.0,
@@ -75,7 +75,7 @@ fn update_wrecks(
     }
 
     if wreck.time_to_live.just_finished() {
-      commands.entity(entity).despawn_recursive();
+      commands.entity(entity).despawn();
     }
   }
 }
@@ -102,16 +102,15 @@ fn spawn_wrecks(
         Transform::from_translation(*translation).with_rotation(*quat),
         Velocity(*velocity),
         Wreck::new(*time_to_live, *blast_size),
-        Roller {
-          roll_speed: *roll_speed,
-        },
+
+        Roller::new(*roll_speed, 0., 0.),
         Acceleration::new(GRAVITY, 0.0, 40.),
       ))
       .id();
     observer.watch_entity(entity);
     commands.spawn(observer);
 
-    ev_splosion_writer.send(EffectSpriteEvent::new(
+    ev_splosion_writer.write(EffectSpriteEvent::new(
       *translation + Vec3::new(0., -0.5, 0.),
       *blast_size,
       *velocity,
@@ -127,7 +126,7 @@ fn add_wreck_material(
   wreck_material: Res<WreckMaterial>,
 ) {
   //info!("adding material!");
-  for descendant in children.iter_descendants(trigger.entity()) {
+  for descendant in children.iter_descendants(trigger.target()) {
     //info!("descendant {:?}", descendant);
     commands
       .entity(descendant)

@@ -79,12 +79,12 @@ fn read_gamepads(
 ) {
   for gamepad in &gamepads {
     if gamepad.just_pressed(GamepadButton::South) {
-      ev_trigger_event.send(InputTriggerEvent::new(
+      ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
       ));
     } else if gamepad.just_released(GamepadButton::South) {
-      ev_trigger_event.send(InputTriggerEvent::new(
+      ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Released,
       ));
@@ -93,7 +93,7 @@ fn read_gamepads(
     let left_stick_y = gamepad.get(GamepadAxis::LeftStickY).unwrap();
     let dir: Vec2 = Vec2::new(-left_stick_x, left_stick_y);
     if dir.length_squared() > 0.1 {
-      ev_movement_event.send(InputMovementEvent::new(dir));
+      ev_movement_event.write(InputMovementEvent::new(dir));
     }
   }
 }
@@ -112,7 +112,7 @@ fn read_touch(
       touch_tracker.last = touch.position();
     } else {
       //second is our shoot action
-      ev_trigger_event.send(InputTriggerEvent::new(
+      ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Pressed,
       ));
@@ -126,7 +126,7 @@ fn read_touch(
       touch_tracker.move_finger = None;
     } else {
       //or stop firing
-      ev_trigger_event.send(InputTriggerEvent::new(
+      ev_trigger_event.write(InputTriggerEvent::new(
         InputEventAction::Shoot,
         InputEventType::Released,
       ));
@@ -141,7 +141,7 @@ fn read_touch(
         found = true;
         let diff = touch_tracker.last - touch.position();
         if diff.length_squared() > 0.5 {
-          ev_movement_event.send(InputMovementEvent::new(diff * 2.));
+          ev_movement_event.write(InputMovementEvent::new(diff * 2.));
         }
         touch_tracker.last = touch.position();
       }
@@ -160,13 +160,13 @@ fn read_mouse(
   mut mouse_location: ResMut<MouseResource>,
 ) {
   if buttons.just_pressed(MouseButton::Right) {
-    ev_trigger_event.send(InputTriggerEvent::new(
+    ev_trigger_event.write(InputTriggerEvent::new(
       InputEventAction::Shoot,
       InputEventType::Pressed,
     ));
   }
   if buttons.just_released(MouseButton::Right) {
-    ev_trigger_event.send(InputTriggerEvent::new(
+    ev_trigger_event.write(InputTriggerEvent::new(
       InputEventAction::Shoot,
       InputEventType::Released,
     ));
@@ -179,7 +179,7 @@ fn read_mouse(
       } else {
         let diff = mouse_location.last - pos;
         if diff.length_squared() > 0.5 {
-          ev_movement_event.send(InputMovementEvent::new(diff * 2.));
+          ev_movement_event.write(InputMovementEvent::new(diff * 2.));
         }
         mouse_location.last = pos;
       }
@@ -206,18 +206,18 @@ fn read_keys(
     dir.y -= 1.;
   }
   if dir != Vec2::ZERO {
-    ev_movement_event.send(InputMovementEvent::new(dir));
+    ev_movement_event.write(InputMovementEvent::new(dir));
   }
 
   if keyboard_input.just_pressed(KeyCode::Space) {
-    ev_trigger_event.send(InputTriggerEvent::new(
+    ev_trigger_event.write(InputTriggerEvent::new(
       InputEventAction::Shoot,
       InputEventType::Pressed,
     ));
   }
 
   if keyboard_input.just_released(KeyCode::Space) {
-    ev_trigger_event.send(InputTriggerEvent::new(
+    ev_trigger_event.write(InputTriggerEvent::new(
       InputEventAction::Shoot,
       InputEventType::Released,
     ));

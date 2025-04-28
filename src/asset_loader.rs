@@ -68,7 +68,7 @@ fn check_load_state(
   //clear assets ...maybe
   //loading.0.clear();
   //signal ready for game start
-  ev_game_state_writer.send(GameStateEvent::new(GameState::Playing));
+  ev_game_state_writer.write(GameStateEvent::new(GameState::Playing));
 }
 
 

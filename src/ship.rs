@@ -112,7 +112,7 @@ fn invincible(
   mut query: Query<(&mut Invincible, &mut Visibility, Entity)>,
   time: Res<Time>,
 ) {
-  let Ok((mut invincible, mut visibilty, entity)) = query.get_single_mut() else {
+  let Ok((mut invincible, mut visibilty, entity)) = query.single_mut() else {
     return;
   };
   invincible.time.tick(time.delta());
@@ -131,7 +131,7 @@ fn invincible(
 }
 
 fn update_pitch(mut query: Query<(&mut PlayerShip, &mut Transform)>, time: Res<Time>) {
-  let Ok((mut ship, mut transform)) = query.get_single_mut() else {
+  let Ok((mut ship, mut transform)) = query.single_mut() else {
     return;
   };
   let diff = ship.target_pitch - ship.pitch;
@@ -154,7 +154,7 @@ fn fire_controls(
   mut hook_query: Query<&mut Hook>,
   scene_assets: Res<SceneAssets>,
 ) {
-  let Ok((entity, mut ship, velocity)) = query.get_single_mut() else {
+  let Ok((entity, mut ship, velocity)) = query.single_mut() else {
     return;
   };
 
@@ -178,11 +178,11 @@ fn fire_controls(
       match ship.captive {
         Some(captive) => {
           //eat captive?
-          commands.entity(captive).despawn_recursive();
+          commands.entity(captive).despawn();
           ship.captive = None;
         }
         None => {
-          let Ok((mut display_hook_visible, transform)) = display_hook_query.get_single_mut()
+          let Ok((mut display_hook_visible, transform)) = display_hook_query.single_mut()
           else {
             return;
           };
@@ -199,7 +199,7 @@ fn fire_controls(
           );
 
           //remove invincible if present
-          if let Ok(mut invincibility) = invinciblitiy_query.get_single_mut() {
+          if let Ok(mut invincibility) = invinciblitiy_query.single_mut() {
             let time = invincibility.time.duration();
             invincibility.time.set_elapsed(time);
           }
@@ -214,7 +214,7 @@ fn movement_controls(
   mut ev_movement_event: EventReader<InputMovementEvent>,
   //keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
-  let Ok((mut acceleration, mut ship)) = query.get_single_mut() else {
+  let Ok((mut acceleration, mut ship)) = query.single_mut() else {
     return;
   };
   let mut acc = Vec2::ZERO;
@@ -228,7 +228,7 @@ fn movement_controls(
 }
 
 fn bounds_check(mut query: Query<&mut Transform, With<PlayerShip>>) {
-  let Ok(mut transform) = query.get_single_mut() else {
+  let Ok(mut transform) = query.single_mut() else {
     return;
   };
 
@@ -244,10 +244,10 @@ fn retrieve_hook(
   mut target_query: Query<(&mut Transform, &mut Hookable)>,
 ) {
   for &HookReturnedEvent { target } in ev_hook_returned.read() {
-    let Ok(mut visible) = display_hook_query.get_single_mut() else {
+    let Ok(mut visible) = display_hook_query.single_mut() else {
       return;
     };
-    let Ok((mut ship, ship_entity)) = ship_query.get_single_mut() else {
+    let Ok((mut ship, ship_entity)) = ship_query.single_mut() else {
       return;
     };
     ship.hook = None;
@@ -280,7 +280,7 @@ fn remove_dead_captive(
   mut query: Query<(Entity, &Captured, &Health), Without<PlayerShip>>,
   mut ship_query: Query<&mut PlayerShip>,
 ) {
-  let Ok((captive_entity, captured, health)) = query.get_single_mut() else {
+  let Ok((captive_entity, captured, health)) = query.single_mut() else {
     return;
   };
   if health.value <= 0. {
@@ -307,7 +307,7 @@ fn check_dead(
     if health.value <= 0. {
       info!("dead");
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
-      ev_wreck_writer.send(WreckedEvent::new(
+      ev_wreck_writer.write(WreckedEvent::new(
         scene_assets.ship.clone(),
         transform.translation(),
         transform.rotation(),
@@ -316,13 +316,13 @@ fn check_dead(
         3.0,
         3.0,
       ));
-      commands.entity(entity).despawn_recursive();
+      commands.entity(entity).despawn();
       play_state.set(PlayState::Dead);
       //get rid of any floating hooks
-      let Ok(hook_entity) = hook_query.get_single() else {
+      let Ok(hook_entity) = hook_query.single() else {
         continue;
       };
-      commands.entity(hook_entity).despawn_recursive();
+      commands.entity(hook_entity).despawn();
     }
   }
 }

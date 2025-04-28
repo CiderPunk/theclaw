@@ -41,12 +41,30 @@ impl Plugin for MovementPlugin {
 
 #[derive(Component)]
 pub struct Roller {
-  pub roll_speed: f32,
+  pub roll:Vec3,
+  
 }
+
+impl Roller{
+  pub fn new(roll:f32, pitch:f32, yaw:f32,)->Self{
+    Self{ roll: Vec3 { x: roll, y: pitch, z: yaw } }
+  }
+}
+
 
 fn update_roll(mut query: Query<(&mut Transform, &Roller)>, time: Res<Time>) {
   for (mut transform, roller) in query.iter_mut() {
-    transform.rotate_local_x(roller.roll_speed * time.delta_secs());
+
+    if roller.roll.x != 0.{
+      transform.rotate_local_x(roller.roll.x * time.delta_secs());
+    }
+    if roller.roll.y != 0.{
+      transform.rotate_local_y(roller.roll.y * time.delta_secs());
+    }
+    if roller.roll.z != 0.{
+      transform.rotate_local_z(roller.roll.z * time.delta_secs());
+    }
+
   }
 }
 

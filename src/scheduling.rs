@@ -1,7 +1,4 @@
-use bevy::{
-  ecs::schedule::{LogLevel, ScheduleBuildSettings},
-  prelude::*,
-};
+use bevy::prelude::*;
 
 use crate::state::GameState;
 
