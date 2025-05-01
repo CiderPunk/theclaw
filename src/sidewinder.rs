@@ -82,7 +82,7 @@ fn shoot_captured(
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
-      ev_shoot_event_writer.send(ShootEvent::new(
+      ev_shoot_event_writer.write(ShootEvent::new(
         true,
         transform.translation() + (transform.left() * 3.0),
         transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED,
@@ -106,7 +106,7 @@ fn shoot(
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
 
-      ev_shoot_event_writer.send(ShootEvent::new(
+      ev_shoot_event_writer.write(ShootEvent::new(
         false,
         transform.translation() + (transform.left() * 3.0),
         velocity.0 + (transform.left() * SIDEWINDER_SHOOT_SPEED),
@@ -128,7 +128,7 @@ fn check_dead(
     if health.value <= 0. {
       info!("dead {:?}", entity);
       //   ev_splosion_writer.send(SplosionEvent::new(transform.translation(), 3.0,velocity.0));
-      ev_wreck_writer.send(WreckedEvent::new(
+      ev_wreck_writer.write(WreckedEvent::new(
         scene_assets.sidewinder.clone(),
         transform.translation(),
         transform.rotation(),
@@ -137,8 +137,8 @@ fn check_dead(
         1.5,
         SIDEWINDER_BLAST_SIZE,
       ));
-      commands.entity(entity).despawn_recursive();
-      ev_point_writer.send(PointEvent(SIDEWINDER_POINTS));
+      commands.entity(entity).despawn();
+      ev_point_writer.write(PointEvent(SIDEWINDER_POINTS));
     }
   }
 }

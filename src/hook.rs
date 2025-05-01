@@ -120,7 +120,7 @@ fn update_hook(
   owner_query: Query<&GlobalTransform>,
   mut ev_hook_returned: EventWriter<HookReturnedEvent>,
 ) {
-  let Ok((mut hook, hook_transform, mut transform, mut acceleration)) = query.get_single_mut()
+  let Ok((mut hook, hook_transform, mut transform, mut acceleration)) = query.single_mut()
   else {
     return;
   };
@@ -138,7 +138,7 @@ fn update_hook(
     let acc = diff.normalize() * -HOOK_RETURN_ACCELERATION;
     acceleration.acceleration = acc;
     if diff_squared < HOOK_RECLAIM_DISTANCE * HOOK_RECLAIM_DISTANCE {
-      ev_hook_returned.send(HookReturnedEvent::new(hook.target));
+      ev_hook_returned.write(HookReturnedEvent::new(hook.target));
     }
   } else if diff_squared > HOOK_RETURN_DISTANCE * HOOK_RETURN_DISTANCE {
     hook.returning = true;
@@ -153,7 +153,7 @@ fn retrieve_hook(
 ) {
   for &HookReturnedEvent { target } in ev_hook_returned.read() {
     //despawn our hook
-    let Ok(entity) = query.get_single() else {
+    let Ok(entity) = query.single() else {
       return;
     };
 
@@ -161,7 +161,7 @@ fn retrieve_hook(
     if let Some(target) = target {
       commands.entity(entity).remove_children(&[target]);
     }
-    commands.entity(entity).despawn_recursive();
+    commands.entity(entity).despawn();
   }
 }
 
@@ -205,7 +205,7 @@ fn apply_collisions(
 }
 
 fn center_hooked(mut query: Query<(&mut Hooked, &mut Transform, &Hookable)>, time: Res<Time>) {
-  let Ok((mut hooked, mut transform, hookable)) = query.get_single_mut() else {
+  let Ok((mut hooked, mut transform, hookable)) = query.single_mut() else {
     return;
   };
   hooked.time.tick(time.delta());

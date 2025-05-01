@@ -116,9 +116,9 @@ fn bullet_hits(
         }
       }
 
-      ev_effect_sprite_writer.send(EffectSpriteEvent::new(transform.translation(), 1., velocity, EffectSpriteType::Ricochet));
+      ev_effect_sprite_writer.write(EffectSpriteEvent::new(transform.translation(), 1., velocity, EffectSpriteType::Ricochet));
     }
-    commands.entity(hit_event.bullet).despawn_recursive();
+    commands.entity(hit_event.bullet).despawn();
 
     //TODO: spawn hit effect / sound
   }

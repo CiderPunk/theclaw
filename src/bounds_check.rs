@@ -29,7 +29,7 @@ fn bounds_check(
       || transform.translation().z < DESPAWN_Z_MIN
     {
       //info!("despawning {:?}", entity);
-      commands.entity(entity).despawn_recursive(); //.despawn();
+      commands.entity(entity).despawn(); //.despawn();
     }
   }
 }

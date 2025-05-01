@@ -43,7 +43,7 @@ fn health_update(
   healthbar_all: Single<(&mut HealthBar, &mut Node, &mut Visibility), Without<HealthBorder>>,
   healthbar_container_all: Single<(&mut HealthBorder, &mut Node), Without<HealthBar>>,
 ) {
-  let Ok(health) = player_health_query.get_single() else {
+  let Ok(health) = player_health_query.single() else {
     return;
   };
   let (mut healthbar, mut hb_node, mut visibility) = healthbar_all.into_inner();
@@ -76,7 +76,7 @@ fn captive_health_update(
 
 ) {
 
-  let Ok(health) = captive_health_query.get_single() else {
+  let Ok(health) = captive_health_query.single() else {
     for mut visibility in &mut captive_ui_query {
       *visibility = Visibility::Hidden;
     }
