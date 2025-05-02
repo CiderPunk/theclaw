@@ -78,7 +78,7 @@ commands.spawn((
     PlayerProximityTest::new(300.0,0.2, |commands, entity, target|->_{
       commands.entity(entity)
         .remove::<PlayerProximityTest>()
-        .insert(TrackToTarget::new(target, 20.0, 0.2));
+        .insert(TrackToTarget::new(target, 50.0, 0.05));
     }),
   ));
 }

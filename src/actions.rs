@@ -27,15 +27,17 @@ impl TrackToTarget{
 }
 
 fn do_track_to_target(
-  mut query:Query<(&mut TrackToTarget, &GlobalTransform, &mut Acceleration)>,
+  mut query:Query<(&mut TrackToTarget, &GlobalTransform, &Velocity, &mut Acceleration)>,
  target_query:Query<&GlobalTransform>, 
  time:Res<Time>
 ){
-  for (mut track_to_target, transform, mut acceleration) in query.iter_mut(){
+  for (mut track_to_target, transform, velocity, mut acceleration) in query.iter_mut(){
     track_to_target.update_timer.tick(time.delta());
     if track_to_target.update_timer.just_finished(){
       let Ok(target_transform) = target_query.get(track_to_target.target) else{ continue; } ;
-      let diff = (target_transform.translation() - transform.translation()).normalize();
+      let target_velocity = (target_transform.translation() - transform.translation()).normalize() * acceleration.max_speed;
+      let diff = (target_velocity - velocity.0).normalize();
+      
       acceleration.acceleration = diff * track_to_target.linear_acceleration;
     }
   }
