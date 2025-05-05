@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, time::Stopwatch};
 use rand::{rngs::ThreadRng, Rng};
 
@@ -13,6 +15,7 @@ impl Plugin for ActionPlugin{
 
 #[derive(Component)]
 pub struct SinePath{
+  base_velocity:Vec3,
   axis:Vec3,
   multiplier:f32,
   offset:f32,
@@ -20,19 +23,18 @@ pub struct SinePath{
 }
 
 impl SinePath{
-pub fn new(axis:Vec3, multiplier:f32, offset:f32)->Self{
-    Self{ axis, multiplier, offset, live_time:Stopwatch::new()}
+pub fn new(base_velocity:Vec3, axis:Vec3, multiplier:f32, offset:f32)->Self{
+    Self{  base_velocity, axis, multiplier, offset, live_time:Stopwatch::new()}
   }
 }
 
 fn do_sine_path(mut query:Query<(&mut SinePath, &mut Velocity)>, time:Res<Time>){
   for (mut sine_path, mut velocity) in query.iter_mut(){
     let phase = ((sine_path.live_time.tick(time.delta()).elapsed_secs() ) * sine_path.multiplier).sin();
-    info!("phase: {}", phase);
-    velocity.0 = phase * sine_path.axis;
+    //info!("phase: {}", phase);
+    velocity.0 = sine_path.base_velocity + (phase * sine_path.axis);
   }
 }
-
 
 #[derive(Component)]
 pub struct TrackToTarget{

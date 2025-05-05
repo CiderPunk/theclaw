@@ -147,6 +147,7 @@ fn spawn_sidewinder(
   let start_z = ENEMY_START_POINT_Z_BOUNDS_MAX * spawn_pos;
   let vel_z = spawn_pos * -SIDEWINDER_VERTICAL_VARIANCE;
 
+  let velocity = Vec3::new(20.0, 0., vel_z);
   //info!("Spawn sidewinder");
   commands.spawn((
     Sidewinder {
@@ -155,7 +156,7 @@ fn spawn_sidewinder(
     SceneRoot(scene_assets.sidewinder.clone()),
     Transform::from_translation(Vec3::new(ENEMY_START_POINT_X, 0., start_z))
       .with_rotation(Quat::from_rotation_z(PI)),
-    Velocity(Vec3::new(20.0, 0., vel_z)),
+    Velocity(velocity),
     Collider {
       radius: SIDEWINDER_COLLISION_RADIUS,
       collision_damage: SIDEWINDER_COLLISION_DAMAGE,
@@ -167,7 +168,6 @@ fn spawn_sidewinder(
     Health::new(SIDEWINDER_HEALTH),
     Roller::new(SIDEWINDER_SPIN_SPEED, 0.,0.),
     //Acceleration::new(Vec3::ZERO, 0.0, 40.),
-    //SinePath::new(Vec3::new(0., 0., 10.),3., 0.),
-
+    SinePath::new(velocity, Vec3::new(0., 0., 10.),1.5, 0.),
   ));
 }
