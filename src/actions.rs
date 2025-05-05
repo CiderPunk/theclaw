@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 use rand::{rngs::ThreadRng, Rng};
 
 use crate::{movement::{Acceleration, Velocity}, scheduling::GameSchedule, ship::PlayerShip};
@@ -7,10 +7,31 @@ pub struct ActionPlugin;
 
 impl Plugin for ActionPlugin{
   fn build(&self, app: &mut App) {
-    app.add_systems(Update, (do_drift, do_player_proximity_test, do_track_to_target ).in_set(GameSchedule::EntityUpdates));
+    app.add_systems(Update, (do_drift, do_player_proximity_test, do_track_to_target, do_sine_path ).in_set(GameSchedule::EntityUpdates));
   }
 }
 
+#[derive(Component)]
+pub struct SinePath{
+  axis:Vec3,
+  multiplier:f32,
+  offset:f32,
+  live_time:Stopwatch,
+}
+
+impl SinePath{
+pub fn new(axis:Vec3, multiplier:f32, offset:f32)->Self{
+    Self{ axis, multiplier, offset, live_time:Stopwatch::new()}
+  }
+}
+
+fn do_sine_path(mut query:Query<(&mut SinePath, &mut Velocity)>, time:Res<Time>){
+  for (mut sine_path, mut velocity) in query.iter_mut(){
+    let phase = ((sine_path.live_time.tick(time.delta()).elapsed_secs() ) * sine_path.multiplier).sin();
+    info!("phase: {}", phase);
+    velocity.0 = phase * sine_path.axis;
+  }
+}
 
 
 #[derive(Component)]

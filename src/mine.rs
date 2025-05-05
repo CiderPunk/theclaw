@@ -11,7 +11,6 @@ const MINE_HEALTH:f32 = 10.;
 const MINE_SPIN_SPEED:f32 = 1.2;
 const MINE_HOOK_TRANSLATION: Vec3 = Vec3::new(-1., 0., 0.);
 const MINE_HOOK_ROTATION: f32 = 0.;
-const MINE_NAME: &str = "mine";
 
 const MINE_POINTS:u64 = 20;
 pub struct MinePlugin;
@@ -75,7 +74,7 @@ commands.spawn((
     Roller::new(0.2, 0.1, MINE_SPIN_SPEED),
     Drift::new(Vec3::new(0.5, 0., 1.), Vec3::new(0., 0., -0.5), 0.2),
     Acceleration::new(Vec3::ZERO, 0., 100.),
-    PlayerProximityTest::new(300.0,0.2, |commands, entity, target|->_{
+    PlayerProximityTest::new(600.0,0.2, |commands, entity, target|->_{
       commands.entity(entity)
         .remove::<PlayerProximityTest>()
         .insert(TrackToTarget::new(target, 50.0, 0.05));

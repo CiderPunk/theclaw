@@ -3,19 +3,7 @@ use rand::Rng;
 use std::{f32::consts::PI, time::Duration};
 
 use crate::{
-  asset_loader::SceneAssets,
-  bounds_check::BoundsDespawn,
-  bullet::ShootEvent,
-  collision_detection::Collider,
-  enemy::*,
-  game_manager::PointEvent,
-  health::Health,
-  hit_marker::HitMarker,
-  hook::{Hookable, Hooked},
-  movement::{Roller, Velocity},
-  scheduling::GameSchedule,
-  ship::Captured,
-  wreck::{Wreck, WreckedEvent},
+  actions::SinePath, asset_loader::SceneAssets, bounds_check::BoundsDespawn, bullet::ShootEvent, collision_detection::Collider, enemy::*, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::{Hookable, Hooked}, movement::{Acceleration, Roller, Velocity}, scheduling::GameSchedule, ship::Captured, wreck::{Wreck, WreckedEvent}
 };
 
 const SIDEWINDER_SPAWN_TIME_SECONDS: f32 = 2.;
@@ -178,5 +166,8 @@ fn spawn_sidewinder(
     ),
     Health::new(SIDEWINDER_HEALTH),
     Roller::new(SIDEWINDER_SPIN_SPEED, 0.,0.),
+    //Acceleration::new(Vec3::ZERO, 0.0, 40.),
+    //SinePath::new(Vec3::new(0., 0., 10.),3., 0.),
+
   ));
 }
