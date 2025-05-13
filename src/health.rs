@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::command, prelude::*};
 
 use crate::scheduling::GameSchedule;
 
@@ -9,22 +9,30 @@ impl Plugin for HealthPlugin {
     app
       .add_systems(
         Update,
-        apply_health_changes.in_set(GameSchedule::HealthAdjust),
+        (apply_health_changes, make_dead).chain().in_set(GameSchedule::HealthAdjust),
       )
       .add_event::<HealthEvent>();
   }
 }
 
+
+#[derive(Component)]
+pub struct Dead{
+  pub killer:Option<Entity>
+}
+
 #[derive(Event)]
 pub struct HealthEvent {
   pub entity: Entity,
+  pub inflictor: Entity,
   pub health_adjustment: f32,
 }
 
 impl HealthEvent {
-  pub fn new(entity: Entity, health_adjustment: f32) -> Self {
+  pub fn new(entity: Entity, inflictor:Entity,  health_adjustment: f32) -> Self {
     Self {
       entity,
+      inflictor,
       health_adjustment,
     }
   }
@@ -34,11 +42,12 @@ impl HealthEvent {
 pub struct Health {
   pub value: f32,
   pub max: f32,
+  last_hurt_by:Option<Entity>,
 }
 
 impl Health {
   pub fn new(value: f32) -> Self {
-    Self { value, max: value }
+    Self { value, max: value, last_hurt_by:None, }
   }
 }
 
@@ -48,12 +57,29 @@ fn apply_health_changes(
 ) {
   for HealthEvent {
     entity,
+    inflictor,
     health_adjustment,
   } in ev_health_reader.read()
   {
     let Ok(mut health) = query.get_mut(*entity) else {
       continue;
     };
-    health.value = (health.value + health_adjustment).min(health.max);
+    if health.value >= 0.{
+      if health_adjustment <0.{
+        health.last_hurt_by = inflictor;
+      }
+      health.value = (health.value + health_adjustment).min(health.max);
+    }
+  }
+}
+
+fn make_dead(mut commands:Commands, query:Query<(Entity, &Health)>){
+  for (entity, health) in query {
+    if health.value <= 0.{
+      commands.entity(entity).insert(
+        Dead{
+          killer:health.last_hurt_by,
+        });
+    }
   }
 }

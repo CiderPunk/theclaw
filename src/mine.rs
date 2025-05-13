@@ -1,4 +1,4 @@
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::{ecs::system::command, math::VectorSpace, prelude::*};
 use rand::Rng;
 
 use crate::{actions::{Drift, PlayerProximityTest, TrackToTarget}, asset_loader::SceneAssets, bounds_check::BoundsDespawn, collision_detection::Collider, effect_sprite::{EffectSpriteEvent, EffectSpriteType}, enemy::{Enemy, ENEMY_START_POINT_X, ENEMY_START_POINT_Z_BOUNDS_MAX}, game_manager::PointEvent, health::Health, hit_marker::HitMarker, hook::Hookable, movement::{Acceleration, Roller, Velocity}, scheduling::GameSchedule};
@@ -39,13 +39,17 @@ fn default() -> Self {
 #[require(Enemy, BoundsDespawn, Hookable, HitMarker)]
 struct Mine;
 
-
+#[derive(Component)]
+struct Detonate{
+  time_to_live:Timer,
+}
 
 fn spawn_mine(
   mut commands:Commands,
   mut spawn_timer:Local<SpawnTimer>,
   time:Res<Time>,
   scene_assets:Res<SceneAssets>,
+  
 ){
   spawn_timer.tick(time.delta());
   if !spawn_timer.just_finished(){ 
@@ -77,7 +81,14 @@ commands.spawn((
     PlayerProximityTest::new(600.0,0.2, |commands, entity, target|->_{
       commands.entity(entity)
         .remove::<PlayerProximityTest>()
-        .insert(TrackToTarget::new(target, 50.0, 0.05));
+        .insert((
+          TrackToTarget::new(target, 50.0, 0.05),
+          PlayerProximityTest::new(40.0, 0.2, |commands, entity, target|->_{
+            commands.entity(entity)
+              .remove::<PlayerProximityTest>()
+              .insert(Detonate{ time_to_live:Timer::from_seconds(0.1, TimerMode::Once)});
+          }),
+        ));
     }),
   ));
 }
@@ -98,8 +109,6 @@ fn check_dead(
         velocity.0,
         EffectSpriteType::Splosion, 
       ));
-      
-
       commands.entity(entity).despawn();
       ev_point_writer.write(PointEvent(MINE_POINTS));
     }
