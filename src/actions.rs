@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use bevy::{prelude::*, time::Stopwatch};
 use rand::{rngs::ThreadRng, Rng};
 

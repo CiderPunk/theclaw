@@ -58,12 +58,12 @@ struct Sidewinder {
 }
 
 fn shoot_captured(
-  mut query: Query<(&mut Sidewinder, &GlobalTransform), With<Captured>>,
+  mut query: Query<(&mut Sidewinder, &GlobalTransform, &Captured)>,
   //captor_query: Query<&Velocity>,
   time: Res<Time>,
   mut ev_shoot_event_writer: EventWriter<ShootEvent>,
 ) {
-  for (mut sidewinder, transform) in &mut query {
+  for (mut sidewinder, transform, captured) in &mut query {
     sidewinder
       .shoot_timer
       .set_duration(Duration::from_secs_f32(SIDEWINDER_CAPTURED_SHOOT_TIME));
@@ -76,6 +76,7 @@ fn shoot_captured(
         transform.left() * SIDEWINDER_CAPTURED_SHOOT_SPEED,
         SIDEWINDER_BULLET_DAMAGE,
         SIDEWINDER_BULLET_SCALE,
+        captured.captor,
       ));
     }
   }
@@ -83,13 +84,13 @@ fn shoot_captured(
 
 fn shoot(
   mut query: Query<
-    (&mut Sidewinder, &GlobalTransform, &Velocity),
+    (&mut Sidewinder, &GlobalTransform, &Velocity, Entity),
     (Without<Hooked>, Without<Captured>),
   >,
   time: Res<Time>,
   mut ev_shoot_event_writer: EventWriter<ShootEvent>,
 ) {
-  for (mut sidewinder, transform, velocity) in &mut query {
+  for (mut sidewinder, transform, velocity, entity) in &mut query {
     sidewinder.shoot_timer.tick(time.delta());
     if sidewinder.shoot_timer.finished() {
       //info!("Shooting");
@@ -100,6 +101,7 @@ fn shoot(
         velocity.0 + (transform.left() * SIDEWINDER_SHOOT_SPEED),
         SIDEWINDER_BULLET_DAMAGE,
         SIDEWINDER_BULLET_SCALE,
+        entity,
       ));
     }
   }

@@ -40,16 +40,18 @@ pub struct ShootEvent {
   pub velocity: Vec3,
   pub damage: f32,
   pub scale:f32,
+  pub owner:Entity
 }
 
 impl ShootEvent {
-  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage: f32, scale:f32) -> Self {
+  pub fn new(is_player: bool, start: Vec3, velocity: Vec3, damage: f32, scale:f32, owner:Entity) -> Self {
     Self {
       is_player,
       start,
       velocity,
       damage,
       scale,
+      owner,
     }
   }
 }
@@ -59,6 +61,7 @@ impl ShootEvent {
 pub struct Bullet {
   //pub hit: bool,
   pub damage: f32,
+  pub owner:Option<Entity>,
 }
 
 fn do_shooting(
@@ -72,6 +75,7 @@ fn do_shooting(
     velocity,
     damage,
     scale,
+    owner,
   } in ev_shoot_events.read()
   {
 
@@ -79,7 +83,7 @@ fn do_shooting(
     //FIXME: yuck
     if is_player {
       commands.spawn((
-        Bullet { damage },
+        Bullet { damage, owner:Some(owner)  },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
         transform,
@@ -88,7 +92,7 @@ fn do_shooting(
       ));
     } else {
       commands.spawn((
-        Bullet { damage },
+        Bullet { damage, owner:Some(owner) },
         Mesh3d(scene_assets.bullet.clone()),
         MeshMaterial3d(scene_assets.bullet_material.clone()),
         transform,

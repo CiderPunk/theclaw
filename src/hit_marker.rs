@@ -66,6 +66,7 @@ fn apply_hit_marker(
 ) {
   for HealthEvent {
     entity,
+    inflictor,
     health_adjustment,
   } in ev_health_reader.read()
   {

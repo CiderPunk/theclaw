@@ -24,12 +24,12 @@ pub struct Dead{
 #[derive(Event)]
 pub struct HealthEvent {
   pub entity: Entity,
-  pub inflictor: Entity,
+  pub inflictor: Option<Entity>,
   pub health_adjustment: f32,
 }
 
 impl HealthEvent {
-  pub fn new(entity: Entity, inflictor:Entity,  health_adjustment: f32) -> Self {
+  pub fn new(entity: Entity, inflictor:Option<Entity>,  health_adjustment: f32) -> Self {
     Self {
       entity,
       inflictor,
@@ -65,8 +65,8 @@ fn apply_health_changes(
       continue;
     };
     if health.value >= 0.{
-      if health_adjustment <0.{
-        health.last_hurt_by = inflictor;
+      if *health_adjustment < 0. && inflictor.is_some(){
+        health.last_hurt_by = inflictor.clone();
       }
       health.value = (health.value + health_adjustment).min(health.max);
     }

@@ -85,7 +85,7 @@ fn player_bullet_collision_detection(
         .translation()
         .distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius {
-        ev_health_writer.write(HealthEvent::new(target_entity, bullet.damage));
+        ev_health_writer.write(HealthEvent::new(target_entity, bullet.owner, bullet.damage));
         ev_bullet_hit_writer.write(BulletHitEvent::new(bullet_entity, Some(target_entity)));
       }
     }
@@ -108,7 +108,7 @@ fn enemy_bullet_collision_detection(
         .distance_squared(tagret_transform.translation());
       if dist_sqr < collider.radius * collider.radius {
         info!("hit ent {:?}", target_entity);
-        ev_health_writer.write(HealthEvent::new(target_entity, bullet.damage));
+        ev_health_writer.write(HealthEvent::new(target_entity, bullet.owner, bullet.damage));
         ev_bullet_hit_writer.write(BulletHitEvent::new(bullet_entity, Some(target_entity)));
       }
     }
@@ -128,8 +128,8 @@ fn player_collision_detection(
         .distance_squared(enemy_transform.translation());
       let collision_seperation = player_collider.radius + enemy_collider.radius;
       if dist_sqr < collision_seperation * collision_seperation {
-        ev_health_writer.write(HealthEvent::new(player, enemy_collider.collision_damage));
-        ev_health_writer.write(HealthEvent::new(enemy, player_collider.collision_damage));
+        ev_health_writer.write(HealthEvent::new(player, Some(enemy), enemy_collider.collision_damage));
+        ev_health_writer.write(HealthEvent::new(enemy, Some(player), player_collider.collision_damage));
         ev_collision_writer.write(CollisionEvent::new(player, enemy));
       }
     }
